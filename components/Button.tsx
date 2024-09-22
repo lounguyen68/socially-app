@@ -6,6 +6,7 @@ import { TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 interface ButtonProps {
   title?: string;
   icon?: string;
+  activeOpacity?: number;
   containerStyle?: ViewStyle;
   textStyle?: TextStyle;
   iconStyle?: ViewStyle;
@@ -17,15 +18,17 @@ interface ButtonProps {
 export const Button = ({
   title,
   icon,
+  activeOpacity = 0.8,
   containerStyle,
   textStyle,
   iconStyle,
-  iconSize,
+  iconSize = 22,
   iconColors,
   onPress,
 }: ButtonProps) => {
   return (
     <TouchableOpacity
+      activeOpacity={activeOpacity}
       style={[defaultStyles.buttonContainer, containerStyle]}
       onPress={onPress}
     >
