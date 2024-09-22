@@ -29,7 +29,6 @@ export default function TabLayout() {
             borderTopStartRadius: 20,
             borderTopEndRadius: 20,
             height: 60,
-            paddingBottom: 20,
             alignItems: 'center',
           },
           tabBarLabelStyle: {
