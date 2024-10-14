@@ -54,6 +54,7 @@ const TabsComponent: React.FC = () => {
               );
             },
             tabBarLabelStyle: { display: 'none' },
+            tabBarActiveTintColor: colors.primaryColor,
           }}
         />
       ))}
