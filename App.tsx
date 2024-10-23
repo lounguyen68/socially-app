@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import TabsComponent from './src/components/Tabs.component';
 import { Provider } from 'react-redux';
 import store from './src/redux/store';
+import { PopupProvider } from './src/components/Popup.component';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,14 +31,16 @@ export default function App() {
   return (
     <NavigationContainer>
       <Provider store={store}>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="Tabs"
-            component={TabsComponent}
-            options={{ headerShown: false }}
-          />
-        </Stack.Navigator>
-        <StatusBar style="auto" />
+        <PopupProvider>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Tabs"
+              component={TabsComponent}
+              options={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+          <StatusBar style="auto" />
+        </PopupProvider>
       </Provider>
     </NavigationContainer>
   );
