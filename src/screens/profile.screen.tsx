@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/src/components/Avatar.component';
 import { Button } from '@/src/components/Button.component';
 import ScreenComponent from '@/src/components/Screen.component';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const ProfileScreen = () => {
   const user = {
@@ -21,18 +22,11 @@ export const ProfileScreen = () => {
   };
 
   return (
-    <ScreenComponent
-      title="Profile"
-      isLoading={isLoading}
-      headerLeft={<></>}
-      // headerRight={<Button title="retry" onPress={handleRefresh} />}
-    >
-      <View style={styles.userInfo}>
-        <View style={styles.background} />
-        <Avatar src={user.avatar} />
-        <Text>{user.name}</Text>
-      </View>
-    </ScreenComponent>
+    <View style={styles.userInfo}>
+      <View style={styles.background} />
+      <Avatar src={user.avatar} />
+      <Text>{user.name}</Text>
+    </View>
   );
 };
 

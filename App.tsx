@@ -1,17 +1,30 @@
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import TabsComponent from './src/components/Tabs.component';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import store from './src/redux/store';
 import { PopupProvider } from './src/components/Popup.component';
+import { RootState } from './src/redux/store';
+import { AuthStackScreen } from './src/navigation';
 
 SplashScreen.preventAutoHideAsync();
 
-const Stack = createStackNavigator();
+const MainNavigator = () => {
+  const { user } = useSelector((state: RootState) => state.user);
+
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  if (!user) {
+    return <AuthStackScreen />;
+  }
+
+  return <TabsComponent />;
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -32,13 +45,7 @@ export default function App() {
     <NavigationContainer>
       <Provider store={store}>
         <PopupProvider>
-          <Stack.Navigator>
-            <Stack.Screen
-              name="Tabs"
-              component={TabsComponent}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
+          <MainNavigator />
           <StatusBar style="auto" />
         </PopupProvider>
       </Provider>
