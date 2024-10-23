@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { mainScreens } from '../constants/screen.const';
+import { mainStacks } from '../navigation/stack.navigation';
 import TabBarIcon from './TabBarIcon.component';
 import { StyleSheet } from 'react-native';
 import { Button } from './Button.component';
@@ -19,17 +19,17 @@ const TabsComponent: React.FC = () => {
         borderTopStartRadius: 20,
         borderTopEndRadius: 20,
         height: 60,
-        alignItems: 'center',
       }}
       initialRouteName="home"
     >
-      {mainScreens.map((screen, index) => (
+      {mainStacks.map((screen, index) => (
         <Tab.Screen
           key={index}
           name={screen.name}
           component={screen.component}
           options={{
-            headerShown: false,
+            headerShown: screen.name === 'post',
+            headerTitle: screen.title,
             tabBarIcon: ({ color }) => {
               if (screen.name === 'post')
                 return (
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     transform: [{ rotate: '45deg' }],
 
-    shadowColor: '#000000', // Color of the shadow
-    shadowOffset: { width: 0, height: 4 }, // Horizontal and vertical offsets
-    shadowOpacity: 0.25, // Opacity of the shadow
-    shadowRadius: 12, // Blur radius
-    elevation: 12, // Elevation for Android (matching the blur radius)
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 12,
   },
 });
 

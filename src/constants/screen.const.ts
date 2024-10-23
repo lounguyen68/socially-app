@@ -1,42 +1,60 @@
 import {
-  CreatePostScreen,
   HomeScreen,
   MessageScreen,
   NotificationScreen,
   ProfileScreen,
 } from '../screens';
+import LoginScreen from '../screens/login.screen';
+import RegisterScreen from '../screens/register.screen';
 
-export const mainScreens = [
+export const authScreens = [
+  {
+    name: 'login',
+    title: 'Login',
+    component: LoginScreen,
+  },
+  {
+    name: 'register',
+    title: 'Register',
+    component: RegisterScreen,
+  },
+];
+
+export const homeScreens = [
   {
     name: 'home',
-    title: '',
-    icon: 'home',
+    title: 'Home',
     component: HomeScreen,
   },
+];
+
+export const messageScreens = [
   {
     name: 'message',
-    title: '',
-    icon: 'message',
+    title: 'Message',
     component: MessageScreen,
   },
-  {
-    name: 'post',
-    title: '',
-    icon: '',
-    component: CreatePostScreen,
-  },
+];
+
+export const notificationScreens = [
   {
     name: 'notification',
-    title: '',
-    icon: 'heart',
+    title: 'Notification',
     component: NotificationScreen,
   },
+];
+
+export const profileScreens = [
   {
     name: 'profile',
-    title: '',
-    icon: 'user',
+    title: 'Profile',
     component: ProfileScreen,
   },
 ];
 
-export type MainScreens = typeof mainScreens;
+export const screens = [
+  ...authScreens,
+  ...homeScreens,
+  ...messageScreens,
+  ...profileScreens,
+];
