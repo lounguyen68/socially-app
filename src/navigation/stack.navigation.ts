@@ -7,24 +7,24 @@ import {
 import { CreatePostScreen } from '../screens';
 
 export const mainStacks = [
-  {
-    name: 'home-stack',
-    title: '',
-    icon: 'home',
-    component: HomeStackScreen,
-  },
+  // {
+  //   name: 'home-stack',
+  //   title: '',
+  //   icon: 'home',
+  //   component: HomeStackScreen,
+  // },
   {
     name: 'message-stack',
     title: '',
     icon: 'message',
     component: MessageStackScreen,
   },
-  {
-    name: 'post',
-    title: 'Post',
-    icon: '',
-    component: CreatePostScreen,
-  },
+  // {
+  //   name: 'post',
+  //   title: 'Post',
+  //   icon: '',
+  //   component: CreatePostScreen,
+  // },
   {
     name: 'notification-stack',
     title: '',

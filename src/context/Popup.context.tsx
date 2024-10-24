@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Modal, View, Text, StyleSheet } from 'react-native';
-import { Button } from './Button.component';
+import { Button } from '../components/Button.component';
 import { colors } from '../constants/colors.const';
 
 interface PopupContextProps {
