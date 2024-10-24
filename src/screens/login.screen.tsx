@@ -3,19 +3,28 @@ import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { login } from '../redux/userSlice';
 import { LoginScreenProps } from '@/type';
+import { useServices } from '../context';
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
+  const { http } = useServices();
 
   const handleLogin = () => {
-    const userData = {
-      user: { id: '1', name: 'John Doe', email },
-      accessToken: 'abc123',
-      refreshToken: 'xyz789',
+    const body = {
+      username: email,
+      password: password,
     };
-    dispatch(login(userData));
+
+    http.post('/users/login', body).then((res) => {
+      const userData = {
+        user: res.userInfo,
+        accessToken: res.userToken.accessToken,
+        refreshToken: res.userToken.refreshToken,
+      };
+      dispatch(login(userData));
+    });
   };
 
   const navigateToRegister = () => {

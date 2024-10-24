@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { usePopup } from '../components/Popup.component';
+import { usePopup } from '../context/Popup.context';
 import { Button } from '../components/Button.component';
 
 export function MessageScreen() {
