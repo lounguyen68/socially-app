@@ -1,12 +1,15 @@
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 interface AvatarProps {
   src?: string;
   containerStyle?: ViewStyle;
 }
 
+const DEFAULT_IMAGE = 'https://picsum.photos/seed/696/3000/2000';
+
 export const Avatar = ({ src, containerStyle }: AvatarProps) => {
-  const source = src ?? 'https://picsum.photos/seed/696/3000/2000';
+  const [source, setSource] = useState(src);
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -15,6 +18,7 @@ export const Avatar = ({ src, containerStyle }: AvatarProps) => {
         source={{
           uri: source,
         }}
+        onError={() => setSource(DEFAULT_IMAGE)}
       />
     </View>
   );

@@ -4,19 +4,21 @@ import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import TabsComponent from './src/components/Tabs.component';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './src/redux/store';
-import { PopupProvider, ServiceProvider } from './src/context';
+import { PopupProvider, ServiceProvider, useServices } from './src/context';
 import { RootState } from './src/redux/store';
 import { AuthStackScreen } from './src/navigation';
 
 SplashScreen.preventAutoHideAsync();
 
 const MainNavigator = () => {
+  const { userService } = useServices();
   const { user } = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    SplashScreen.hideAsync();
+    userService.checkRememberLogin(dispatch);
   }, []);
 
   if (!user) {
@@ -33,7 +35,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      // SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 

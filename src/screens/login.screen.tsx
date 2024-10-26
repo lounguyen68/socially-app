@@ -3,28 +3,32 @@ import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { login } from '../redux/userSlice';
 import { LoginScreenProps } from '@/type';
-import { useServices } from '../context';
+import { usePopup, useServices } from '../context';
+import { apiLogin } from '../api/login.api';
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const { http } = useServices();
+  const { http, storageService } = useServices();
+  const { showPopup } = usePopup();
 
   const handleLogin = () => {
-    const body = {
-      username: email,
-      password: password,
-    };
-
-    http.post('/users/login', body).then((res) => {
-      const userData = {
-        user: res.userInfo,
-        accessToken: res.userToken.accessToken,
-        refreshToken: res.userToken.refreshToken,
-      };
-      dispatch(login(userData));
-    });
+    apiLogin({ username, password })
+      .then(({ userInfo, userToken }) => {
+        const userData = {
+          user: userInfo,
+          accessToken: userToken.accessToken,
+          refreshToken: userToken.refreshToken,
+        };
+        dispatch(login(userData));
+        http.setToken(userToken.accessToken);
+        storageService.setRefreshToken(userToken.refreshToken);
+        storageService.setUserInfo(userInfo);
+      })
+      .catch((error) => {
+        showPopup(error.message);
+      });
   };
 
   const navigateToRegister = () => {
@@ -35,9 +39,9 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
     <View style={styles.container}>
       <Text>Login</Text>
       <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
         style={styles.input}
       />
       <TextInput
