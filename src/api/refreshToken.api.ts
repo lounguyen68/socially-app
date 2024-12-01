@@ -3,6 +3,7 @@ import { httpService } from '../services/httpService';
 
 export interface RefreshTokenPayload {
   refreshToken: string;
+  deviceToken?: string;
 }
 
 export interface RefreshTokenResponse {
@@ -11,5 +12,8 @@ export interface RefreshTokenResponse {
 }
 
 export const apiRefreshToken = (body: RefreshTokenPayload) => {
-  return httpService.post<RefreshTokenResponse>(Routes.REFRESH_TOKEN, body);
+  return httpService.put<RefreshTokenResponse, RefreshTokenPayload>(
+    Routes.REFRESH_TOKEN,
+    body,
+  );
 };

@@ -9,7 +9,7 @@ interface AvatarProps {
 const DEFAULT_IMAGE = 'https://picsum.photos/seed/696/3000/2000';
 
 export const Avatar = ({ src, containerStyle }: AvatarProps) => {
-  const [source, setSource] = useState(src);
+  const [source, setSource] = useState(src ?? DEFAULT_IMAGE);
 
   return (
     <View style={[styles.container, containerStyle]}>

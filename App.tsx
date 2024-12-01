@@ -17,9 +17,11 @@ const MainNavigator = () => {
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    userService.checkRememberLogin(dispatch);
-  }, []);
+  // useEffect(() => {
+  //   if (!user?._id) {
+  //     userService.checkRememberLogin(dispatch);
+  //   }
+  // }, [user?._id]);
 
   if (!user) {
     return <AuthStackScreen />;
@@ -35,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      // SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 

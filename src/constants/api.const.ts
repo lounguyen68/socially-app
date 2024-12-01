@@ -1,6 +1,7 @@
 export enum Routes {
-  SIGNUP = '/users/signup',
-  LOGIN = '/users/login',
-  LOGOUT = '/users/logout',
-  REFRESH_TOKEN = '/users/token',
+  SIGNUP = '/auth/signup',
+  LOGIN = '/auth/login',
+  LOGOUT = '/auth/logout',
+  REFRESH_TOKEN = '/auth/token',
+  GET_CONVERSATIONS = '/conversations',
 }

@@ -23,11 +23,12 @@ class UserService {
 
       const userInfo = await this.storage.getUserInfo();
 
+      this.http.setToken(response.accessToken);
+      this.storage.setRefreshToken(response.refreshToken);
+
       if (!userInfo) return;
 
       dispatch(login({ user: userInfo, ...response }));
-      this.http.setToken(response.accessToken);
-      this.storage.setRefreshToken(response.refreshToken);
     } catch (error) {
       console.error('Error while refreshing token:', error);
     } finally {

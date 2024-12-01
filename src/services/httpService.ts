@@ -13,6 +13,16 @@ class HttpService {
       },
     });
     this.token = null;
+
+    this.api.interceptors.response.use(
+      (response) => {
+        return response.data;
+      },
+      (error) => {
+        this.handleError(error);
+        return Promise.reject(error);
+      },
+    );
   }
 
   setToken(token: string) {
@@ -24,15 +34,17 @@ class HttpService {
     method: AxiosRequestConfig['method'],
     url: string,
     body?: any,
+    params?: Record<string, any>,
   ): Promise<T> {
     try {
       const config: AxiosRequestConfig = {
         method,
         url: this.api.defaults.baseURL + url,
         data: body,
+        params,
       };
 
-      console.log(config.url, method);
+      console.log(method, url, params, body);
 
       const response: AxiosResponse<T> = await this.api.request<T>(config);
       return response.data;
@@ -42,24 +54,24 @@ class HttpService {
     }
   }
 
-  async get<T>(url: string): Promise<T> {
-    return this.makeRequest<T>('get', url);
+  async get<T>(url: string, params?: Record<string, any>): Promise<T> {
+    return this.makeRequest<T>('GET', url, undefined, params);
   }
 
-  async post<T>(url: string, body?: any): Promise<T> {
-    return this.makeRequest<T>('post', url, body);
+  async post<T, B>(url: string, body?: B): Promise<T> {
+    return this.makeRequest<T>('POST', url, body);
   }
 
-  async put<T>(url: string, body?: any): Promise<T> {
-    return this.makeRequest<T>('put', url, body);
+  async put<T, B>(url: string, body?: B): Promise<T> {
+    return this.makeRequest<T>('PUT', url, body);
   }
 
-  async patch<T>(url: string, body?: any): Promise<T> {
-    return this.makeRequest<T>('patch', url, body);
+  async patch<T, B>(url: string, body?: B): Promise<T> {
+    return this.makeRequest<T>('PATCH', url, body);
   }
 
   async delete<T>(url: string): Promise<T> {
-    return this.makeRequest<T>('delete', url);
+    return this.makeRequest<T>('DELETE', url);
   }
 
   private handleError(error: any): void {

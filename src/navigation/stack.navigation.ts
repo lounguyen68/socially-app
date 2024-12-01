@@ -28,7 +28,7 @@ export const mainStacks = [
   {
     name: 'notification-stack',
     title: '',
-    icon: 'heart',
+    icon: 'search',
     component: NotificationStackScreen,
   },
   {

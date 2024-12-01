@@ -14,17 +14,13 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const { showPopup } = usePopup();
 
   const handleLogin = () => {
-    apiLogin({ username, password })
-      .then(({ userInfo, userToken }) => {
-        const userData = {
-          user: userInfo,
-          accessToken: userToken.accessToken,
-          refreshToken: userToken.refreshToken,
-        };
+    apiLogin({ name: username, password })
+      .then((userData) => {
+        const { user, accessToken, refreshToken } = userData;
         dispatch(login(userData));
-        http.setToken(userToken.accessToken);
-        storageService.setRefreshToken(userToken.refreshToken);
-        storageService.setUserInfo(userInfo);
+        http.setToken(accessToken);
+        storageService.setRefreshToken(refreshToken);
+        storageService.setUserInfo(user);
       })
       .catch((error) => {
         showPopup(error.message);
