@@ -1,8 +1,8 @@
 import {
   HomeScreen,
   MessageScreen,
-  NotificationScreen,
   ProfileScreen,
+  SearchScreen,
 } from '../screens';
 import LoginScreen from '../screens/login.screen';
 import RegisterScreen from '../screens/register.screen';
@@ -36,11 +36,19 @@ export const messageScreens = [
   },
 ];
 
-export const notificationScreens = [
+// export const notificationScreens = [
+//   {
+//     name: 'notification',
+//     title: 'Notification',
+//     component: NotificationScreen,
+//   },
+// ];
+
+export const searchingScreens = [
   {
-    name: 'notification',
-    title: 'Notification',
-    component: NotificationScreen,
+    name: 'search',
+    title: 'Search',
+    component: SearchScreen,
   },
 ];
 

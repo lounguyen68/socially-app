@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { usePopup } from '../context/Popup.context';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import { apiGetConversations, Conversation } from '../api/getConversations.api';
 import { setConversations } from '../redux/conversationsSlice';
 import { ConversationItem } from '../components/ConversationItem.component';
 import { colors } from '../constants';
+import SearchInput from '../components/SearchInput.component';
 
 const DEFAULT_LIMIT = 10;
 
@@ -47,18 +48,28 @@ export function MessageScreen() {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: Conversation }) => <ConversationItem item={item} />,
+    ({ item }: { item: Conversation }) => (
+      <ConversationItem item={item} isReaded={false} />
+    ),
     [],
   );
 
   return (
-    <FlatList
-      style={styles.container}
-      data={conversations}
-      renderItem={renderItem}
-      keyExtractor={(item) => item._id}
-      onEndReached={() => fetchConversations()}
-    />
+    <View style={styles.container}>
+      <SearchInput
+        placeholder="Search for conversations"
+        // search={searchStr}
+        // setSearch={setSearchStr}
+      />
+      <FlatList
+        style={styles.list}
+        data={conversations}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        onEndReached={() => fetchConversations()}
+        onEndReachedThreshold={0.5}
+      />
+    </View>
   );
 }
 
@@ -66,5 +77,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.whiteColor,
+  },
+  list: {
+    flex: 1,
   },
 });

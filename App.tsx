@@ -6,7 +6,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import TabsComponent from './src/components/Tabs.component';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './src/redux/store';
-import { PopupProvider, ServiceProvider, useServices } from './src/context';
+import {
+  PopupProvider,
+  ServiceProvider,
+  SocketProvider,
+  useServices,
+} from './src/context';
 import { RootState } from './src/redux/store';
 import { AuthStackScreen } from './src/navigation';
 
@@ -17,11 +22,11 @@ const MainNavigator = () => {
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if (!user?._id) {
-  //     userService.checkRememberLogin(dispatch);
-  //   }
-  // }, [user?._id]);
+  useEffect(() => {
+    if (!user?._id) {
+      userService.checkRememberLogin(dispatch);
+    }
+  }, [user?._id]);
 
   if (!user) {
     return <AuthStackScreen />;
@@ -37,7 +42,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      // SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
@@ -49,10 +54,12 @@ export default function App() {
     <NavigationContainer>
       <Provider store={store}>
         <ServiceProvider>
-          <PopupProvider>
-            <MainNavigator />
-            <StatusBar style="auto" />
-          </PopupProvider>
+          <SocketProvider>
+            <PopupProvider>
+              <MainNavigator />
+              <StatusBar style="auto" />
+            </PopupProvider>
+          </SocketProvider>
         </ServiceProvider>
       </Provider>
     </NavigationContainer>

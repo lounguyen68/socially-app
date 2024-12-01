@@ -3,42 +3,85 @@ import { Conversation } from '../api/getConversations.api';
 import { useConversation } from '../hooks/useConversation.hook';
 import { Avatar } from './Avatar.component';
 import { formatTime } from '../helpers';
+import { colors } from '../constants';
+import Svg, { Circle } from 'react-native-svg';
 
-export const ConversationItem = ({ item }: { item: Conversation }) => {
+export type ConversationItemProps = {
+  item: Conversation;
+  isReaded: boolean;
+};
+
+export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
   const { getConversationInfo } = useConversation(item);
 
   const [conversationName, conversationAvatar] = getConversationInfo();
 
   return (
     <TouchableOpacity style={styles.container}>
-      <View style={styles.info}>
-        <Avatar src={conversationAvatar} containerStyle={styles.avatar} />
-        <Text style={styles.name}>{conversationName}</Text>
-      </View>
-      {item.updatedAt && (
-        <Text style={styles.name}>{formatTime(item.updatedAt)}</Text>
+      {!isReaded && (
+        <Svg width="24" height="24" style={styles.unreadIndicator}>
+          <Circle cx="12" cy="12" r="6" fill={colors.primaryColor} />
+        </Svg>
       )}
+      <Avatar src={conversationAvatar} containerStyle={styles.avatar} />
+      <View style={styles.content}>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{conversationName}</Text>
+          {item.updatedAt && (
+            <Text style={styles.timestamp}>{formatTime(item.updatedAt)}</Text>
+          )}
+        </View>
+        <Text style={styles.message} numberOfLines={1}>
+          {'Hihehhehe'}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    margin: 2,
-    padding: 8,
-    flex: 1,
     flexDirection: 'row',
-  },
-  info: {
-    flex: 1,
-    flexDirection: 'row',
+    alignItems: 'flex-start',
+    margin: 4,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    marginVertical: 5,
+    position: 'relative',
   },
   avatar: {
-    marginRight: 8,
-    width: 60,
-    height: 60,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
-  name: {
+  content: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  userName: {
     fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: colors.grayColor,
+  },
+  message: {
+    fontSize: 14,
+    color: colors.grayColor,
+    opacity: 0.8,
+  },
+  unreadIndicator: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
   },
 });

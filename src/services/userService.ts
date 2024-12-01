@@ -20,11 +20,10 @@ class UserService {
 
     try {
       const response = await apiRefreshToken({ refreshToken });
+      this.http.setToken(response.accessToken);
+      await this.storage.setRefreshToken(response.refreshToken);
 
       const userInfo = await this.storage.getUserInfo();
-
-      this.http.setToken(response.accessToken);
-      this.storage.setRefreshToken(response.refreshToken);
 
       if (!userInfo) return;
 

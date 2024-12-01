@@ -31,8 +31,8 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     <View style={styles.container}>
       <View style={styles.userInfo}>
         <View style={styles.background} />
-        <Avatar src={user?.urlAvatar} />
-        <Text style={styles.userName}>{user?.username}</Text>
+        <Avatar src={user?.avatarPath} />
+        <Text style={styles.userName}>{user?.name}</Text>
       </View>
 
       <View style={styles.userFeatures}>

@@ -5,6 +5,7 @@ import {
   ProfileStackScreen,
 } from '.';
 import { CreatePostScreen } from '../screens';
+import { SearchingStackScreen } from './searching.navigation';
 
 export const mainStacks = [
   // {
@@ -29,7 +30,7 @@ export const mainStacks = [
     name: 'notification-stack',
     title: '',
     icon: 'search',
-    component: NotificationStackScreen,
+    component: SearchingStackScreen,
   },
   {
     name: 'profile-stack',
