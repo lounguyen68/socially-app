@@ -1,4 +1,5 @@
 import {
+  ConversationDetail,
   HomeScreen,
   MessageScreen,
   ProfileScreen,
@@ -33,6 +34,11 @@ export const messageScreens = [
     name: 'message',
     title: 'Message',
     component: MessageScreen,
+  },
+  {
+    name: 'conversation-detail',
+    title: 'Message Detai;',
+    component: ConversationDetail,
   },
 ];
 

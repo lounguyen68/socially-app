@@ -11,7 +11,7 @@ import SearchInput from '../components/SearchInput.component';
 
 const DEFAULT_LIMIT = 10;
 
-export function MessageScreen() {
+export function MessageScreen({ navigation }: any) {
   const [hasMoreConversations, setHasMoreConversations] = useState(true);
   const { conversations } = useSelector(
     (state: RootState) => state.conversations,

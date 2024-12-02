@@ -5,6 +5,9 @@ import { Avatar } from './Avatar.component';
 import { formatTime } from '../helpers';
 import { colors } from '../constants';
 import Svg, { Circle } from 'react-native-svg';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { setChatRoom } from '../redux/chatRoomSlice';
 
 export type ConversationItemProps = {
   item: Conversation;
@@ -12,12 +15,32 @@ export type ConversationItemProps = {
 };
 
 export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
+  const navigation = useNavigation<any>();
+  const dispatch = useDispatch<any>();
   const { getConversationInfo } = useConversation(item);
 
   const [conversationName, conversationAvatar] = getConversationInfo();
 
+  const navigateToConversationDetail = () => {
+    dispatch(
+      setChatRoom({
+        id: item._id,
+        conversation: item,
+        messages: [],
+      }),
+    );
+
+    navigation.navigate('conversation-detail', {
+      conversationName: conversationName,
+      conversationAvatar: conversationAvatar,
+    });
+  };
+
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={navigateToConversationDetail}
+    >
       {!isReaded && (
         <Svg width="24" height="24" style={styles.unreadIndicator}>
           <Circle cx="12" cy="12" r="6" fill={colors.primaryColor} />

@@ -1,7 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { messageScreens } from '../constants';
-import { Button, Text, View } from 'react-native';
 
 const MessageStack = createStackNavigator();
 

@@ -53,6 +53,7 @@ const TabsComponent: React.FC = () => {
                 />
               );
             },
+            tabBarHideOnKeyboard: true,
             tabBarLabelStyle: { display: 'none' },
             tabBarActiveTintColor: colors.primaryColor,
           }}

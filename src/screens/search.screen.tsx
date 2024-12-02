@@ -9,16 +9,18 @@ import SearchInput from '../components/SearchInput.component';
 import { useState, useEffect } from 'react';
 import { colors } from '../constants';
 import { apiGetUsers } from '../api/getUsers.api';
+import { UserItem } from '../components/UserItem.component';
+import { SearchScreenProps } from '@/type';
 
 const DEFAULT_LIMIT = 10;
 
-export const SearchScreen = () => {
+export const SearchScreen = ({ navigation }: SearchScreenProps) => {
   const [searchStr, setSearchStr] = useState<string>('');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!searchStr) return;
+    if (!searchStr) return setUsers([]);
 
     const fetchUsers = async () => {
       setLoading(true);
@@ -56,12 +58,7 @@ export const SearchScreen = () => {
       <FlatList
         data={users}
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <View style={styles.userItem}>
-            <Text style={styles.userName}>{item.name}</Text>
-            <Text style={styles.userEmail}>{item.email}</Text>
-          </View>
-        )}
+        renderItem={({ item }) => <UserItem item={item} />}
         ListEmptyComponent={<Text>No users found</Text>}
       />
     </View>
@@ -72,7 +69,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.whiteColor,
-    padding: 16,
   },
   loader: {
     marginTop: 20,
