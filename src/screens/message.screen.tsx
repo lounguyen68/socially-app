@@ -8,6 +8,7 @@ import { setConversations } from '../redux/conversationsSlice';
 import { ConversationItem } from '../components/ConversationItem.component';
 import { colors } from '../constants';
 import SearchInput from '../components/SearchInput.component';
+import { RefreshControl } from 'react-native-gesture-handler';
 
 const DEFAULT_LIMIT = 10;
 
@@ -20,12 +21,12 @@ export function MessageScreen({ navigation }: any) {
   const { showPopup } = usePopup();
 
   const fetchConversations = async (isRefreshing?: boolean) => {
-    if (!hasMoreConversations) return;
+    if (!hasMoreConversations && !isRefreshing) return;
 
     try {
       const data = await apiGetConversations({
         limit: DEFAULT_LIMIT,
-        skip: conversations.length,
+        skip: isRefreshing ? 0 : conversations.length,
       });
 
       dispatch(
@@ -68,6 +69,12 @@ export function MessageScreen({ navigation }: any) {
         keyExtractor={(item) => item._id}
         onEndReached={() => fetchConversations()}
         onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={() => fetchConversations(true)}
+          />
+        }
       />
     </View>
   );

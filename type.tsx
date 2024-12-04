@@ -1,14 +1,13 @@
 import type { StackScreenProps } from '@react-navigation/stack';
+import { User } from './src/api/login.api';
 
 type RootStackParamList = {
   home: undefined;
   profile: { userId: string };
   message: undefined;
   'conversation-detail': {
-    conversationId?: string;
-    conversationName: string;
-    conversationAvatar: string;
     isMockConversation: boolean;
+    user?: User;
   };
   'conversation-item': undefined;
   notification: undefined;

@@ -3,11 +3,12 @@ import { Conversation } from '../api/getConversations.api';
 import { useConversation } from '../hooks/useConversation.hook';
 import { Avatar } from './Avatar.component';
 import { formatTime } from '../helpers';
-import { colors } from '../constants';
+import { colors, MessageType } from '../constants';
 import Svg, { Circle } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { setChatRoom } from '../redux/chatRoomSlice';
+import { useMemo } from 'react';
 
 export type ConversationItemProps = {
   item: Conversation;
@@ -24,7 +25,7 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
   const navigateToConversationDetail = () => {
     dispatch(
       setChatRoom({
-        id: item._id,
+        _id: item._id,
         conversation: item,
         messages: [],
       }),
@@ -35,6 +36,14 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
       conversationAvatar: conversationAvatar,
     });
   };
+
+  const lastMessageContent = useMemo(() => {
+    const { lastMessage } = item;
+
+    if (!lastMessage) return '';
+
+    if (lastMessage.type === MessageType.TEXT) return lastMessage.content;
+  }, [item.lastMessage]);
 
   return (
     <TouchableOpacity
@@ -55,7 +64,7 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
           )}
         </View>
         <Text style={styles.message} numberOfLines={1}>
-          {'Hihehhehe'}
+          {lastMessageContent}
         </Text>
       </View>
     </TouchableOpacity>

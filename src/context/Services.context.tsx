@@ -1,11 +1,16 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { httpService, storageService } from '../services';
-import { userService } from '../services/userService';
+import {
+  chatService,
+  httpService,
+  storageService,
+  userService,
+} from '../services';
 
 interface ServiceContextType {
   http: typeof httpService;
   storageService: typeof storageService;
   userService: typeof userService;
+  chatService: typeof chatService;
 }
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
@@ -15,6 +20,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     http: httpService,
     storageService: storageService,
     userService: userService,
+    chatService: chatService,
   };
 
   return (

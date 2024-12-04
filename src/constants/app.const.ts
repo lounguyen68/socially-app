@@ -3,10 +3,20 @@ export enum ConversationType {
   GROUP,
 }
 
-export const ClientEmitMessages = {
-  SEND_MESSAGE: 'SEND_MESSAGE',
-};
+export enum MessageType {
+  TEXT,
+  IMAGE,
+  FILE,
+  VIDEO,
+  REACT,
+}
 
-export const ServerEmitMessages = {
-  NEW_MESSAGE: 'NEW_MESSAGE',
-};
+export enum ClientEmitMessages {
+  SEND_MESSAGE = 'SEND_MESSAGE',
+  CREATE_CONVERSATION = 'CREATE_CONVERSATION',
+}
+
+export enum ServerEmitMessages {
+  NEW_MESSAGE = 'NEW_MESSAGE',
+  NEW_CONVERSATION = 'NEW_CONVERSATION',
+}

@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Conversation, Member } from '../api/getConversations.api';
+import { Message } from '../api/getMessages.api';
 
 interface ChatRoomState {
-  id?: string;
+  _id?: string;
   conversation?: Conversation;
   messages: any[];
 }
@@ -18,21 +19,26 @@ const chatRoomSlice = createSlice({
     setChatRoom: (
       state,
       action: PayloadAction<{
-        id?: string;
+        _id?: string;
         conversation?: Conversation;
         messages: any[];
       }>,
     ) => {
-      state = {
-        ...action.payload,
-      };
+      state._id = action.payload._id;
+      state.conversation = action.payload.conversation;
+      state.messages = action.payload.messages;
     },
 
-    setMessages: (state, action: PayloadAction<any[]>) => {
-      state.messages = action.payload;
+    setMessages: (state, action: PayloadAction<Message[]>) => {
+      state.messages = [...state.messages, ...action.payload];
+    },
+
+    setNewMessage: (state, action: PayloadAction<Message>) => {
+      state.messages.unshift(action.payload);
     },
   },
 });
 
-export const { setChatRoom } = chatRoomSlice.actions;
+export const { setChatRoom, setMessages, setNewMessage } =
+  chatRoomSlice.actions;
 export default chatRoomSlice.reducer;

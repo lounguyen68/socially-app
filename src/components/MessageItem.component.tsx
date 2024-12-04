@@ -1,42 +1,40 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 import { Avatar } from '../components/Avatar.component';
-import { colors } from '../constants';
+import { colors, MessageType } from '../constants';
+import { Message } from '../api/getMessages.api';
+import { formatTime } from '../helpers';
 
-interface IMessageItemProps {
-  message: IMessage;
+const { width } = Dimensions.get('window');
+
+interface MessageItemProps {
+  message: Message;
 }
 
-interface IMessage {
-  user: {
-    avatarUrl: string;
-    name: string;
-  };
-  content: string;
-  imageUrl?: string;
-  time: string;
-}
+export default function MessageItem({ message }: MessageItemProps) {
+  if (message.type === MessageType.IMAGE)
+    return (
+      <Image
+        source={{ uri: message.attachments?.[0].path }}
+        style={styles.messageImage}
+        resizeMode="cover"
+      />
+    );
 
-export default function MessageItem({ message }: IMessageItemProps) {
   return (
     <View style={styles.container}>
-      <Avatar src={message.user.avatarUrl} />
+      <Avatar
+        src={message.sender.user.avatarPath}
+        containerStyle={styles.avatar}
+      />
+      <Text style={styles.messageContent}>{message.content}</Text>
 
       <View style={styles.contentContainer}>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{message.user.name}</Text>
-          <Text style={styles.messageTime}>{message.time}</Text>
+          <Text style={styles.messageTime}>
+            {formatTime(message.createdAt)}
+          </Text>
         </View>
-
-        <Text style={styles.messageContent}>{message.content}</Text>
-
-        {message.imageUrl && (
-          <Image
-            source={{ uri: message.imageUrl }}
-            style={styles.messageImage}
-            resizeMode="cover"
-          />
-        )}
       </View>
     </View>
   );
@@ -44,13 +42,17 @@ export default function MessageItem({ message }: IMessageItemProps) {
 
 const styles = StyleSheet.create({
   container: {
+    flexShrink: 1, // Allow content to shrink
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: colors.whiteColor,
+    backgroundColor: colors.lightWhiteColor,
     borderRadius: 20,
     padding: 12,
     marginBottom: 12,
-    gap: 16,
+  },
+  avatar: {
+    width: 30,
+    height: 30,
   },
   contentContainer: {
     flex: 1,
@@ -62,11 +64,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  userName: {
-    fontSize: 16,
-    color: colors.primaryColor,
-    opacity: 0.8,
-  },
   messageTime: {
     fontSize: 12,
     color: colors.grayColor,
@@ -74,8 +71,9 @@ const styles = StyleSheet.create({
   },
   messageContent: {
     fontSize: 14,
-    color: colors.secondaryColor,
-    opacity: 0.8,
+    color: colors.blackColor,
+    flexShrink: 1,
+    maxWidth: width * 0.8,
   },
   messageImage: {
     width: '100%',

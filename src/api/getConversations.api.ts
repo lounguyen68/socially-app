@@ -1,6 +1,7 @@
 import { ConversationType } from '../constants';
 import { Routes } from '../constants/api.const';
 import { httpService } from '../services';
+import { Message } from './getMessages.api';
 import { User } from './login.api';
 
 export interface Member {
@@ -14,6 +15,7 @@ export interface Conversation {
   name?: string;
   type: ConversationType;
   members: Member[];
+  lastMessage: Message;
   createdAt?: Date;
   updatedAt?: Date;
 }
