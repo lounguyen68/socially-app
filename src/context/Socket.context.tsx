@@ -5,7 +5,12 @@ import { ServerEmitMessages } from '../constants';
 import { Message } from '../api/getMessages.api';
 import { useDispatch } from 'react-redux';
 import { setNewMessage } from '../redux/chatRoomSlice';
-import { setLastMessage } from '../redux/conversationsSlice';
+import {
+  setLastMessage,
+  setNewConversation,
+} from '../redux/conversationsSlice';
+import { Conversation } from '../api/getConversations.api';
+import { useServices } from './Services.context';
 
 const SOCKET_URL = `${API_URL}/socket.io`;
 
@@ -20,11 +25,25 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const dispatch = useDispatch();
+  const { chatService } = useServices();
 
   const handleNewMessage = (message: Message) => {
-    console.log(message);
+    console.log('handleNewMessage');
     dispatch(setNewMessage(message));
     dispatch(setLastMessage({ conversationId: message.conversation, message }));
+  };
+
+  const handleNewConversation = (conversation: Conversation) => {
+    console.log('handleNewConversation');
+
+    chatService
+      .getConversationById(conversation._id)
+      .then((data) => {
+        if (!data) return;
+
+        dispatch(setNewConversation({ conversation: data }));
+      })
+      .catch((error) => {});
   };
 
   useEffect(() => {
@@ -42,19 +61,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error('WebSocket connection error:', error);
     });
 
-    newSocket.on('connect', () => {
-      console.log('WebSocket connected');
-    });
+    newSocket.on('connect', () => {});
 
-    newSocket.on('disconnect', (reason) => {
-      console.warn('WebSocket disconnected:', reason);
-    });
+    newSocket.on('disconnect', (reason) => {});
 
     newSocket.on(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
+
+    newSocket.on(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
 
     return () => {
       newSocket.disconnect();
       newSocket.off(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
+      newSocket.off(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
     };
   }, []);
 

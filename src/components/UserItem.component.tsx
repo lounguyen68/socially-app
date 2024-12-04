@@ -24,10 +24,8 @@ export const UserItem = ({ item }: UserItemProps) => {
       });
 
       const params = {
-        conversationName: item.name,
-        conversationAvatar: item.avatarPath,
+        user: item,
         isMockConversation: !data,
-        userIds: [item._id],
       };
 
       const payload = {

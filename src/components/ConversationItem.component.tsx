@@ -32,8 +32,10 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
     );
 
     navigation.navigate('conversation-detail', {
-      conversationName: conversationName,
-      conversationAvatar: conversationAvatar,
+      user: {
+        name: conversationName,
+        avatarPath: conversationAvatar,
+      },
     });
   };
 

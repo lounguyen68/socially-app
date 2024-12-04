@@ -137,7 +137,7 @@ export const ConversationDetail = ({
     let conversationId = _id;
     let conversationData = conversation;
 
-    if (isMockConversation && user) {
+    if (isMockConversation && user && !_id) {
       conversationData = await chatService.createMockConversation(user._id);
 
       if (!conversationData) return;

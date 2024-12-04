@@ -1,9 +1,8 @@
 import { apiCreateConversation } from '../api/createConversation.api';
 import { apiCreateMessage } from '../api/createMessage.api';
+import { apiGetConversationById } from '../api/getConversationById.api';
 import { Conversation, Member } from '../api/getConversations.api';
-import { Message } from '../api/getMessages.api';
 import { ConversationType, MessageType } from '../constants';
-import { Socket } from 'socket.io-client';
 
 class ChatService {
   async createMockConversation(userId: string) {
@@ -56,6 +55,16 @@ class ChatService {
       console.error('Failed to send message:', error);
       return null;
     }
+  }
+
+  async getConversationById(conversationId: string) {
+    try {
+      const data = await apiGetConversationById({
+        id: conversationId,
+      });
+
+      return data;
+    } catch (error) {}
   }
 }
 
