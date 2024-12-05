@@ -8,6 +8,7 @@ import { apiLogout } from '../api/logout.api';
 import { useServices } from '../context';
 import { logout } from '../redux/userSlice';
 import { ProfileScreenProps } from '@/type';
+import { setConversations } from '../redux/conversationsSlice';
 
 export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const { user } = useSelector((state: RootState) => state.user);
@@ -20,6 +21,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         storageService.clearRefreshToken();
         storageService.clearUserInfo();
         dispatch(logout());
+        dispatch(setConversations({ conversations: [], isRefreshing: true }));
         navigation.navigate('login');
       })
       .catch((err) => {

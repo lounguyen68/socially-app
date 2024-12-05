@@ -1,54 +1,98 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { login } from '../redux/userSlice';
-import { useNavigation } from '@react-navigation/native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { LoginScreenProps } from '@/type';
+import { usePopup } from '../context';
+import { colors } from '../constants';
+import { apiRegister } from '../api/register.api';
 
-const RegisterScreen = () => {
-  const [name, setName] = useState('');
+const RegisterScreen = ({ navigation }: LoginScreenProps) => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const { showPopup } = usePopup();
 
   const handleRegister = () => {
-    // Giả lập dữ liệu người dùng và token
-    const userData = {
-      user: { id: '2', name, email },
-      accessToken: 'xyz789',
-      refreshToken: 'abc123',
-    };
-    dispatch(login(userData));
+    setLoading(true);
+    apiRegister({
+      name: username,
+      email,
+      password,
+    })
+      .then(() => navigateToLogin())
+      .catch((error) => {
+        showPopup(error.message);
+      })
+      .finally(() => setLoading(true));
   };
 
   const navigateToLogin = () => {
-    navigation.navigate('login'); // Điều hướng tới màn hình Login
+    navigation.navigate('login');
   };
 
   return (
     <View style={styles.container}>
-      <Text>Register</Text>
-      <TextInput
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button title="Register" onPress={handleRegister} />
-      <Button title="Go to Login" onPress={navigateToLogin} />
+      <View style={styles.logoContainer}>
+        <Text style={styles.title}>Sign up to Socially</Text>
+      </View>
+
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
+        {/* {usernameError ? (
+          <Text style={styles.errorText}>{usernameError}</Text>
+        ) : null} */}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        {/* {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null} */}
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.disabledButton]}
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={colors.primaryColor} />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          You have an account?{' '}
+          <Text style={styles.footerLink} onPress={navigateToLogin}>
+            Sign in, here!
+          </Text>
+        </Text>
+      </View>
     </View>
   );
 };
@@ -58,15 +102,58 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    backgroundColor: colors.whiteColor,
+    paddingHorizontal: 20,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  form: {
+    width: '100%',
   },
   input: {
-    width: '100%',
-    padding: 10,
-    marginVertical: 10,
+    backgroundColor: colors.lightGrayColor,
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#444',
+  },
+  errorText: {
+    color: '#FF5A5A',
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: colors.primaryColor,
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  disabledButton: {
+    backgroundColor: colors.grayColor,
+  },
+  buttonText: {
+    color: colors.whiteColor,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  footer: {
+    marginTop: 20,
+  },
+  footerText: {
+    textAlign: 'center',
+  },
+  footerLink: {
+    color: colors.primaryColor,
+    fontWeight: 'bold',
   },
 });
 

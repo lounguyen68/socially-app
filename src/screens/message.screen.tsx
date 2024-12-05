@@ -44,15 +44,11 @@ export function MessageScreen({ navigation }: any) {
     }
   };
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
-
   const renderItem = useCallback(
     ({ item }: { item: Conversation }) => (
       <ConversationItem item={item} isReaded={false} />
     ),
-    [],
+    [conversations],
   );
 
   return (

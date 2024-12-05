@@ -1,17 +1,21 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { Avatar } from '../components/Avatar.component';
 import { colors, MessageType } from '../constants';
 import { Message } from '../api/getMessages.api';
 import { formatTime } from '../helpers';
-
-const { width } = Dimensions.get('window');
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
 
 interface MessageItemProps {
   message: Message;
 }
 
 export default function MessageItem({ message }: MessageItemProps) {
+  const { user } = useSelector((state: RootState) => state.user);
+
+  const isYourMessage = user?._id === message.sender.user._id;
+
   if (message.type === MessageType.IMAGE)
     return (
       <Image
@@ -22,58 +26,73 @@ export default function MessageItem({ message }: MessageItemProps) {
     );
 
   return (
-    <View style={styles.container}>
-      <Avatar
-        src={message.sender.user.avatarPath}
-        containerStyle={styles.avatar}
-      />
-      <Text style={styles.messageContent}>{message.content}</Text>
-
-      <View style={styles.contentContainer}>
-        <View style={styles.userInfo}>
-          <Text style={styles.messageTime}>
-            {formatTime(message.createdAt)}
-          </Text>
-        </View>
+    <View
+      style={[
+        styles.container,
+        isYourMessage ? styles.userMessage : styles.receivedMessage,
+      ]}
+    >
+      {!isYourMessage && (
+        <Avatar
+          src={message.sender.user.avatarPath}
+          containerStyle={styles.avatar}
+        />
+      )}
+      <View
+        style={[
+          styles.bubble,
+          isYourMessage ? styles.userBubble : styles.receivedBubble,
+        ]}
+      >
+        <Text style={styles.messageContent}>{message.content}</Text>
       </View>
+      <Text style={styles.messageTime}>{formatTime(message.createdAt)}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexShrink: 1, // Allow content to shrink
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.lightWhiteColor,
-    borderRadius: 20,
-    padding: 12,
+    alignItems: 'flex-end',
     marginBottom: 12,
+    maxWidth: '80%', // Giới hạn chiều rộng của message
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row-reverse',
+  },
+  receivedMessage: {
+    alignSelf: 'flex-start',
   },
   avatar: {
     width: 30,
     height: 30,
+    marginRight: 8,
   },
-  contentContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    gap: 8,
+  bubble: {
+    borderRadius: 20,
+    padding: 10,
+    flexShrink: 1,
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  userBubble: {
+    backgroundColor: colors.primaryColor,
+    alignSelf: 'flex-end',
   },
-  messageTime: {
-    fontSize: 12,
-    color: colors.grayColor,
-    opacity: 0.5,
+  receivedBubble: {
+    backgroundColor: colors.lightWhiteColor,
+    alignSelf: 'flex-start',
   },
   messageContent: {
     fontSize: 14,
     color: colors.blackColor,
-    flexShrink: 1,
-    maxWidth: width * 0.8,
+  },
+  messageTime: {
+    fontSize: 10,
+    color: colors.grayColor,
+    opacity: 0.7,
+    marginTop: 4,
+    textAlign: 'right',
   },
   messageImage: {
     width: '100%',
