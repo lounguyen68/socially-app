@@ -12,6 +12,7 @@ import searchIcon from '../../assets/icons/search.svg';
 import sendIcon from '../../assets/icons/send.svg';
 import albumIcon from '../../assets/icons/album.svg';
 import attachmentIcon from '../../assets/icons/attachment.svg';
+import cameraIcon from '../../assets/icons/camera.svg';
 
 export const Icons: { [key: string]: string } = {
   home: homeIcon,
@@ -28,4 +29,5 @@ export const Icons: { [key: string]: string } = {
   send: sendIcon,
   album: albumIcon,
   attachment: attachmentIcon,
+  camera: cameraIcon,
 };

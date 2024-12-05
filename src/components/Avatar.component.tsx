@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 interface AvatarProps {
   src?: string;
@@ -10,6 +10,10 @@ const DEFAULT_IMAGE = 'https://picsum.photos/seed/696/3000/2000';
 
 export const Avatar = ({ src, containerStyle }: AvatarProps) => {
   const [source, setSource] = useState(src ?? DEFAULT_IMAGE);
+
+  useEffect(() => {
+    setSource(src ?? DEFAULT_IMAGE);
+  }, [src]);
 
   return (
     <View style={[styles.container, containerStyle]}>

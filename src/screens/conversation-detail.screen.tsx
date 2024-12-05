@@ -56,7 +56,7 @@ export const ConversationDetail = ({
 
   const pickImages = () => {
     ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images', 'videos'],
+      mediaTypes: ['images'],
       quality: 1,
     }).then((result) => {
       console.log(result);

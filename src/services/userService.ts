@@ -4,6 +4,12 @@ import { login } from '../redux/userSlice';
 import { storageService } from './storageService';
 import { httpService } from './httpService';
 import * as SplashScreen from 'expo-splash-screen';
+import * as FileSystem from 'expo-file-system';
+import { ImagePickerAsset } from 'expo-image-picker';
+import { UploadType } from '../constants';
+import { apiSignedUrl } from '../api/signedUrl.api';
+import { apiUpload } from '../api/upload.api';
+import { apiUpdateUserAvatar } from '../api/updateUserAvatar.api';
 
 class UserService {
   constructor(
@@ -32,6 +38,36 @@ class UserService {
       console.error('Error while refreshing token:', error);
     } finally {
       SplashScreen.hideAsync();
+    }
+  };
+
+  updateUserAvatar = async (avatar: ImagePickerAsset) => {
+    const { fileName, mimeType, uri } = avatar;
+
+    if (!fileName || !mimeType || !uri) return;
+
+    const payload = {
+      key: fileName,
+      contentType: mimeType,
+      uploadType: UploadType.AVATAR,
+    };
+
+    try {
+      const { url } = await apiSignedUrl(payload);
+
+      const file = await fetch(uri);
+
+      const response = await apiUpload({
+        url,
+        body: await file.blob(),
+      });
+
+      if (!response.ok) return;
+
+      const avatarPath = url.split('?')[0];
+      return apiUpdateUserAvatar({ avatarPath });
+    } catch (error) {
+      console.log(error);
     }
   };
 }

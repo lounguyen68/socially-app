@@ -11,6 +11,11 @@ export enum MessageType {
   REACT,
 }
 
+export enum UploadType {
+  AVATAR = 'avatar',
+  CHAT = 'chat',
+}
+
 export enum ClientEmitMessages {
   SEND_MESSAGE = 'SEND_MESSAGE',
   CREATE_CONVERSATION = 'CREATE_CONVERSATION',

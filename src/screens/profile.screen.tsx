@@ -1,19 +1,55 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Avatar } from '@/src/components/Avatar.component';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { colors } from '../constants/colors.const';
 import Icon from '../components/Icon';
 import { apiLogout } from '../api/logout.api';
-import { useServices } from '../context';
-import { logout } from '../redux/userSlice';
+import { usePopup, useServices } from '../context';
+import { logout, updateUserData } from '../redux/userSlice';
 import { ProfileScreenProps } from '@/type';
 import { setConversations } from '../redux/conversationsSlice';
+import { useCallback, useState } from 'react';
 
 export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const { user } = useSelector((state: RootState) => state.user);
-  const { storageService } = useServices();
+  const { storageService, userService } = useServices();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const { showPopup } = usePopup();
+
+  const handleChangeAvatar = async () => {
+    if (loading) return;
+
+    ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      quality: 0.1,
+    }).then((result) => {
+      if (result.canceled) return;
+      setLoading(true);
+      const avatar = result.assets[0];
+      userService
+        .updateUserAvatar(avatar)
+        .then((userData) => {
+          if (!userData) return;
+
+          storageService.setUserInfo(userData);
+          dispatch(updateUserData(userData));
+        })
+        .catch((error) => {
+          showPopup(error);
+        })
+        .finally(() => setLoading(false));
+    });
+  };
 
   const handleLogout = () => {
     apiLogout()
@@ -33,7 +69,14 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     <View style={styles.container}>
       <View style={styles.userInfo}>
         <View style={styles.background} />
-        <Avatar src={user?.avatarPath} />
+        <TouchableOpacity style={styles.avatar} onPress={handleChangeAvatar}>
+          <Avatar src={user?.avatarPath} />
+          {loading ? (
+            <ActivityIndicator size={40} style={styles.cameraIcon} />
+          ) : (
+            <Icon name="camera" size={40} style={styles.cameraIcon} />
+          )}
+        </TouchableOpacity>
         <Text style={styles.userName}>{user?.name}</Text>
       </View>
 
@@ -74,8 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   userFeatureText: {
-    fontSize: 18,
-    padding: 10,
+    fontSize: 16,
   },
   background: {
     backgroundColor: '#E1F6F4',
@@ -84,5 +126,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -490,
     borderRadius: 300,
+  },
+  avatar: {
+    opacity: 0.8,
+  },
+  cameraIcon: {
+    position: 'absolute',
+    top: 75,
+    left: 75,
+    transform: [{ translateX: -20 }, { translateY: -20 }],
   },
 });
