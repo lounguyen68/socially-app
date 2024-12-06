@@ -3,13 +3,27 @@ import { Routes } from '../constants/api.const';
 import { httpService } from '../services';
 import { Member } from './getConversations.api';
 
+export interface Attachment {
+  name: string;
+  path: string;
+  metadata: {
+    width: number;
+    height: number;
+    size: number;
+  };
+  conversation: string;
+  message: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Message {
   _id: string;
   type: MessageType;
   content?: string;
   sender: Member;
   conversation: string;
-  attachments?: any[];
+  attachments?: Attachment[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { mainStacks } from '../navigation/stack.navigation';
 import TabBarIcon from './TabBarIcon.component';
@@ -6,11 +6,38 @@ import { StyleSheet } from 'react-native';
 import { Button } from './Button.component';
 import { colors } from '../constants/colors.const';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+
+export const requestMediaPermissions = async () => {
+  let imagePickerPermission =
+    await ImagePicker.getMediaLibraryPermissionsAsync();
+  if (!imagePickerPermission.granted) {
+    imagePickerPermission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+  }
+
+  return imagePickerPermission.granted;
+};
+
+export const requestFilesPermissions = async () => {
+  // if (Platform.OS === 'android') {
+  //   const filePermission = await FileSystem.getPermissionsAsync();
+  //   if (!filePermission.granted) {
+  //     await FileSystem.requestPermissionsAsync();
+  //   }
+  // }
+};
 
 const Tab = createBottomTabNavigator();
 
 const TabsComponent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<Record<string, any>>>();
+
+  useEffect(() => {
+    requestMediaPermissions();
+    // requestFilesPermissions();
+  }, []);
 
   return (
     <Tab.Navigator

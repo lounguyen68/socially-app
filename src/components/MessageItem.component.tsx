@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Avatar } from '../components/Avatar.component';
 import { colors, MessageType } from '../constants';
 import { Message } from '../api/getMessages.api';
 import { formatTime } from '../helpers';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
+import MessageImages from './MessageImages.component';
 
 interface MessageItemProps {
   message: Message;
@@ -16,14 +17,31 @@ export default function MessageItem({ message }: MessageItemProps) {
 
   const isYourMessage = user?._id === message.sender.user._id;
 
-  if (message.type === MessageType.IMAGE)
+  const renderMessageContent = () => {
+    if (message.type === MessageType.IMAGE) {
+      if (!message.attachments?.length) return <></>;
+
+      const attachment = message.attachments[0];
+
+      return (
+        <MessageImages
+          attachments={[attachment]}
+          isYourMessage={isYourMessage}
+        />
+      );
+    }
+
     return (
-      <Image
-        source={{ uri: message.attachments?.[0].path }}
-        style={styles.messageImage}
-        resizeMode="cover"
-      />
+      <View
+        style={[
+          styles.bubble,
+          isYourMessage ? styles.userBubble : styles.receivedBubble,
+        ]}
+      >
+        <Text style={styles.messageContent}>{message.content}</Text>
+      </View>
     );
+  };
 
   return (
     <View
@@ -38,14 +56,7 @@ export default function MessageItem({ message }: MessageItemProps) {
           containerStyle={styles.avatar}
         />
       )}
-      <View
-        style={[
-          styles.bubble,
-          isYourMessage ? styles.userBubble : styles.receivedBubble,
-        ]}
-      >
-        <Text style={styles.messageContent}>{message.content}</Text>
-      </View>
+      {renderMessageContent()}
       <Text style={styles.messageTime}>{formatTime(message.createdAt)}</Text>
     </View>
   );
@@ -91,12 +102,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.grayColor,
     opacity: 0.7,
-    marginTop: 4,
+    margin: 2,
     textAlign: 'right',
-  },
-  messageImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 20,
   },
 });

@@ -6,9 +6,10 @@ import { formatTime } from '../helpers';
 import { colors, MessageType } from '../constants';
 import Svg, { Circle } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setChatRoom } from '../redux/chatRoomSlice';
 import { useMemo } from 'react';
+import { RootState } from '../redux/store';
 
 export type ConversationItemProps = {
   item: Conversation;
@@ -19,6 +20,7 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch<any>();
   const { getConversationInfo } = useConversation(item);
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [conversationName, conversationAvatar] = getConversationInfo();
 
@@ -45,6 +47,23 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
     if (!lastMessage) return '';
 
     if (lastMessage.type === MessageType.TEXT) return lastMessage.content;
+
+    if (lastMessage.type === MessageType.IMAGE)
+      return `Đã gửi ${lastMessage.attachments?.length} hình ảnh`;
+
+    if (lastMessage.type === MessageType.FILE)
+      return `Đã gửi ${lastMessage.attachments?.length} tệp tin`;
+  }, [item.lastMessage]);
+
+  const senderContent = useMemo(() => {
+    const sender = item.members.find(
+      (member) =>
+        member._id === (item.lastMessage?.sender as unknown as string),
+    );
+
+    if (sender?.user._id === user?._id) return 'Bạn';
+
+    return sender?.user.name;
   }, [item.lastMessage]);
 
   return (
@@ -66,7 +85,7 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
           )}
         </View>
         <Text style={styles.message} numberOfLines={1}>
-          {lastMessageContent}
+          {`${senderContent}: ${lastMessageContent}`}
         </Text>
       </View>
     </TouchableOpacity>

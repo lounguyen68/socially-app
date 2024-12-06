@@ -21,6 +21,7 @@ import {
   setLastMessage,
   setNewConversation,
 } from '../redux/conversationsSlice';
+import { requestMediaPermissions } from '../components/Tabs.component';
 
 const { height } = Dimensions.get('window');
 const DOCUMENT_TYPE = [
@@ -54,9 +55,14 @@ export const ConversationDetail = ({
   //   DocumentPicker.DocumentPickerAsset[] | null
   // >(null);
 
-  const pickImages = () => {
+  const pickImages = async () => {
+    const permission = await requestMediaPermissions();
+
+    if (!permission) return;
+
     ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
+      allowsMultipleSelection: true,
       quality: 1,
     }).then((result) => {
       console.log(result);
