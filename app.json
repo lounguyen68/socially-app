@@ -20,9 +20,24 @@
         "foregroundImage": "./assets/images/socially-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.READ_MEDIA_IMAGES"]
+      "permissions": ["android.permission.READ_MEDIA_IMAGES"],
+      "package": "com.lounguyen68.socially"
     },
     "plugins": [
+      [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -35,6 +50,11 @@
           "iCloudContainerEnvironment": "Production"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "29a260a6-71ac-4166-bb9e-ec44a0b4d1ff"
+      }
+    }
   }
 }
