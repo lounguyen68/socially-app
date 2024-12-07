@@ -10,7 +10,7 @@ import ChatInput from '../components/ChatInput.component';
 import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
-import { apiGetMessages } from '../api/getMessages.api';
+import { apiGetMessages, Attachment } from '../api/getMessages.api';
 import {
   setChatRoom,
   setMessages,
@@ -21,7 +21,6 @@ import {
   setLastMessage,
   setNewConversation,
 } from '../redux/conversationsSlice';
-import { requestMediaPermissions } from '../components/Tabs.component';
 
 const { height } = Dimensions.get('window');
 const DOCUMENT_TYPE = [
@@ -56,19 +55,25 @@ export const ConversationDetail = ({
   // >(null);
 
   const pickImages = async () => {
-    const permission = await requestMediaPermissions();
-
-    if (!permission) return;
-
     ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
       quality: 1,
     }).then((result) => {
-      console.log(result);
-      if (!result.canceled) {
-        // setImages(result.assets);
-      }
+      if (result.canceled) return;
+
+      const images: Attachment[] = result.assets.map((asset) => ({
+        name: asset.fileName ?? '',
+        path: asset.uri,
+        metadata: {
+          mimeType: asset.mimeType ?? '',
+          width: asset.width,
+          height: asset.height,
+          size: asset.fileSize ?? 0,
+        },
+      }));
+
+      sendImages(images);
     });
   };
 
@@ -175,12 +180,12 @@ export const ConversationDetail = ({
       return;
     }
 
-    const message = await chatService.createMessage(
-      text,
-      MessageType.TEXT,
-      conversationId,
-      senderId,
-    );
+    const message = await chatService.createMessage({
+      content: text,
+      type: MessageType.TEXT,
+      conversationId: conversationId,
+      sender: senderId,
+    });
 
     if (message) {
       dispatch(setNewMessage(message));
@@ -188,6 +193,62 @@ export const ConversationDetail = ({
       setText('');
       socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
     }
+  };
+
+  const sendImages = async (images: Attachment[]) => {
+    if (!currentUser) return;
+
+    let conversationId = _id;
+    let conversationData = conversation;
+
+    if (isMockConversation && user && !_id) {
+      conversationData = await chatService.createMockConversation(user._id);
+
+      if (!conversationData) return;
+
+      conversationId = conversationData._id;
+
+      dispatch(
+        setChatRoom({
+          _id: conversationId,
+          conversation: conversationData,
+          messages: [],
+        }),
+      );
+
+      dispatch(setNewConversation({ conversation: conversationData }));
+
+      socket?.emit(ClientEmitMessages.CREATE_CONVERSATION, conversationData);
+    }
+
+    if (!conversationId || !conversationData) {
+      navigation.goBack();
+      return;
+    }
+
+    const senderId = chatService.getSender(conversationData, currentUser?._id);
+
+    if (!senderId) {
+      navigation.goBack();
+      return;
+    }
+
+    const message = await chatService.createMessage({
+      content: '',
+      type: MessageType.IMAGE,
+      attachments: images,
+      conversationId,
+      sender: senderId,
+    });
+
+    if (!message) return;
+
+    message.attachments = images;
+
+    dispatch(setNewMessage(message));
+    dispatch(setLastMessage({ conversationId, message }));
+    setText('');
+    socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
   };
 
   const renderItem = useCallback(

@@ -10,11 +10,14 @@ import { UploadType } from '../constants';
 import { apiSignedUrl } from '../api/signedUrl.api';
 import { apiUpload } from '../api/upload.api';
 import { apiUpdateUserAvatar } from '../api/updateUserAvatar.api';
+import { uploadService } from './uploadService';
+import { Attachment } from '../api/getMessages.api';
 
 class UserService {
   constructor(
     private storage = storageService,
     private http = httpService,
+    private upload = uploadService,
   ) {}
 
   checkRememberLogin = async (dispatch: AppDispatch) => {
@@ -46,25 +49,25 @@ class UserService {
 
     if (!fileName || !mimeType || !uri) return;
 
-    const payload = {
-      key: fileName,
-      contentType: mimeType,
-      uploadType: UploadType.AVATAR,
+    const attachment: Attachment = {
+      name: fileName,
+      path: uri,
+      metadata: {
+        mimeType: mimeType,
+        size: avatar.fileSize ?? 0,
+        width: avatar.width,
+        height: avatar.height,
+      },
     };
 
     try {
-      const { url } = await apiSignedUrl(payload);
+      const avatarPath = await this.upload.singleUpload(
+        attachment,
+        UploadType.AVATAR,
+      );
 
-      const file = await fetch(uri);
+      if (!avatarPath) return;
 
-      const response = await apiUpload({
-        url,
-        body: await file.blob(),
-      });
-
-      if (!response.ok) return;
-
-      const avatarPath = url.split('?')[0];
       return apiUpdateUserAvatar({ avatarPath });
     } catch (error) {
       console.log(error);

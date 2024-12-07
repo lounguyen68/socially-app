@@ -1,28 +1,24 @@
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 interface AvatarProps {
   src?: string;
   containerStyle?: ViewStyle;
+  setLoading?: () => void;
 }
 
 const DEFAULT_IMAGE = 'https://picsum.photos/seed/696/3000/2000';
 
-export const Avatar = ({ src, containerStyle }: AvatarProps) => {
-  const [source, setSource] = useState(src ?? DEFAULT_IMAGE);
-
-  useEffect(() => {
-    setSource(src ?? DEFAULT_IMAGE);
-  }, [src]);
-
+export const Avatar = ({ src, containerStyle, setLoading }: AvatarProps) => {
   return (
     <View style={[styles.container, containerStyle]}>
       <Image
         style={styles.image}
         source={{
-          uri: source,
+          uri: src,
         }}
-        onError={() => setSource(DEFAULT_IMAGE)}
+        onLoadEnd={() => setLoading && setLoading()}
+        placeholder={DEFAULT_IMAGE}
+        placeholderContentFit="fill"
       />
     </View>
   );

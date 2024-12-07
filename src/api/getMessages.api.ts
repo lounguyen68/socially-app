@@ -7,14 +7,15 @@ export interface Attachment {
   name: string;
   path: string;
   metadata: {
+    mimeType: string;
     width: number;
     height: number;
     size: number;
   };
-  conversation: string;
-  message: string;
-  createdAt: Date;
-  updatedAt: Date;
+  conversation?: string;
+  message?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Message {

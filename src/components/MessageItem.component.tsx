@@ -21,11 +21,9 @@ export default function MessageItem({ message }: MessageItemProps) {
     if (message.type === MessageType.IMAGE) {
       if (!message.attachments?.length) return <></>;
 
-      const attachment = message.attachments[0];
-
       return (
         <MessageImages
-          attachments={[attachment]}
+          attachments={message.attachments}
           isYourMessage={isYourMessage}
         />
       );
@@ -38,7 +36,15 @@ export default function MessageItem({ message }: MessageItemProps) {
           isYourMessage ? styles.userBubble : styles.receivedBubble,
         ]}
       >
-        <Text style={styles.messageContent}>{message.content}</Text>
+        <Text
+          style={
+            isYourMessage
+              ? styles.messageContent
+              : styles.receivedMessageContent
+          }
+        >
+          {message.content}
+        </Text>
       </View>
     );
   };
@@ -95,6 +101,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   messageContent: {
+    fontSize: 14,
+    color: colors.whiteColor,
+  },
+  receivedMessageContent: {
     fontSize: 14,
     color: colors.blackColor,
   },

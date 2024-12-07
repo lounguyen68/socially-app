@@ -56,10 +56,16 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
   }, [item.lastMessage]);
 
   const senderContent = useMemo(() => {
-    const sender = item.members.find(
-      (member) =>
-        member._id === (item.lastMessage?.sender as unknown as string),
-    );
+    const { lastMessage } = item;
+
+    if (!lastMessage) return '';
+
+    const senderId =
+      typeof lastMessage.sender === 'string'
+        ? lastMessage.sender
+        : lastMessage.sender._id;
+
+    const sender = item.members.find((member) => member._id === senderId);
 
     if (sender?.user._id === user?._id) return 'Bạn';
 
@@ -84,9 +90,11 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
             <Text style={styles.timestamp}>{formatTime(item.updatedAt)}</Text>
           )}
         </View>
-        <Text style={styles.message} numberOfLines={1}>
-          {`${senderContent}: ${lastMessageContent}`}
-        </Text>
+        {item?.lastMessage && (
+          <Text style={styles.message} numberOfLines={1}>
+            {`${senderContent}: ${lastMessageContent}`}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );

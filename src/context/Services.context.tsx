@@ -4,11 +4,13 @@ import {
   httpService,
   storageService,
   userService,
+  uploadService,
 } from '../services';
 
 interface ServiceContextType {
   http: typeof httpService;
   storageService: typeof storageService;
+  uploadService: typeof uploadService;
   userService: typeof userService;
   chatService: typeof chatService;
 }
@@ -19,6 +21,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const services: ServiceContextType = {
     http: httpService,
     storageService: storageService,
+    uploadService: uploadService,
     userService: userService,
     chatService: chatService,
   };

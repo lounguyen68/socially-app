@@ -4,3 +4,4 @@ export * from './screen.const';
 export * from './styles.const';
 export * from './api.const';
 export * from './app.const';
+export * from './validations.const';

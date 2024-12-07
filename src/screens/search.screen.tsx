@@ -59,7 +59,9 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
         data={users}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => <UserItem item={item} />}
-        ListEmptyComponent={<Text>No users found</Text>}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center' }}>No users found</Text>
+        }
       />
     </View>
   );

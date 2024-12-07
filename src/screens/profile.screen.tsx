@@ -31,7 +31,8 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'images',
       allowsEditing: true,
-      quality: 0.1,
+      aspect: [1, 1],
+      quality: 1,
     }).then((result) => {
       if (result.canceled) return;
       setLoading(true);
@@ -46,8 +47,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         })
         .catch((error) => {
           showPopup(error);
-        })
-        .finally(() => setLoading(false));
+        });
     });
   };
 
@@ -70,7 +70,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       <View style={styles.userInfo}>
         <View style={styles.background} />
         <TouchableOpacity style={styles.avatar} onPress={handleChangeAvatar}>
-          <Avatar src={user?.avatarPath} />
+          <Avatar src={user?.avatarPath} setLoading={() => setLoading(false)} />
           {loading ? (
             <ActivityIndicator size={40} style={styles.cameraIcon} />
           ) : (

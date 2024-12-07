@@ -8,7 +8,7 @@
     "scheme": "socially-app",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/socially-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/socially-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": ["android.permission.READ_MEDIA_IMAGES"]

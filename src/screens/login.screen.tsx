@@ -8,34 +8,41 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { Formik } from 'formik';
 import { login } from '../redux/userSlice';
 import { LoginScreenProps } from '@/type';
 import { usePopup, useServices } from '../context';
 import { apiLogin } from '../api/login.api';
-import { colors } from '../constants';
+import { colors, loginValidationSchema } from '../constants';
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
   const { http, storageService } = useServices();
   const { showPopup } = usePopup();
 
-  const handleLogin = () => {
-    setLoading(true);
-    apiLogin({ name: username, password })
-      .then((userData) => {
-        const { user, accessToken, refreshToken } = userData;
-        dispatch(login(userData));
-        http.setToken(accessToken);
-        storageService.setRefreshToken(refreshToken);
-        storageService.setUserInfo(user);
-      })
-      .catch((error) => {
-        showPopup(error.message);
-      })
-      .finally(() => setLoading(false));
+  const handleLogin = async (
+    values: { username: string; password: string },
+    setSubmitting: (isSubmitting: boolean) => void,
+  ) => {
+    setSubmitting(true);
+    try {
+      const userData = await apiLogin({
+        name: values.username,
+        password: values.password,
+      });
+      const { user, accessToken, refreshToken } = userData;
+
+      dispatch(login(userData));
+      http.setToken(accessToken);
+      storageService.setRefreshToken(refreshToken);
+      storageService.setUserInfo(user);
+    } catch (error: any) {
+      const errorMessage = error.response.data.message;
+      showPopup(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const navigateToRegister = () => {
@@ -45,44 +52,75 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        {/* <LogoSVG width={150} height={50} /> */}
         <Text style={styles.title}>Sign in to Socially</Text>
       </View>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-        {/* {usernameError ? (
-          <Text style={styles.errorText}>{usernameError}</Text>
-        ) : null} */}
+      <Formik
+        initialValues={{ username: '', password: '' }}
+        validationSchema={loginValidationSchema}
+        onSubmit={(values, { setSubmitting }) => {
+          handleLogin(values, setSubmitting);
+        }}
+        validateOnChange={false}
+        validateOnBlur={false}
+      >
+        {({ handleChange, handleSubmit, values, errors, isSubmitting }) => (
+          <View style={styles.form}>
+            <TextInput
+              style={[
+                styles.input,
+                errors.username && {
+                  borderColor: '#FF5A5A',
+                  borderWidth: 0.5,
+                },
+              ]}
+              placeholder="Username"
+              onChangeText={handleChange('username')}
+              value={values.username}
+            />
+            {errors.username && (
+              <Text style={styles.errorText}>{errors.username}</Text>
+            )}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {/* {passwordError ? (
-          <Text style={styles.errorText}>{passwordError}</Text>
-        ) : null} */}
+            <View>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.password && {
+                    borderColor: '#FF5A5A',
+                    borderWidth: 0.5,
+                  },
+                ]}
+                placeholder="Password"
+                secureTextEntry={!showPassword}
+                onChangeText={handleChange('password')}
+                value={values.password}
+              />
+              <Text
+                style={styles.togglePassword}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </Text>
+            </View>
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.disabledButton]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.primaryColor} />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity
+              style={[styles.button, isSubmitting && styles.disabledButton]}
+              onPress={handleSubmit as any}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color={colors.primaryColor} />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </Formik>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
@@ -117,7 +155,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    backgroundColor: colors.lightGrayColor,
+    backgroundColor: colors.lightWhiteColor,
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
@@ -126,6 +164,13 @@ const styles = StyleSheet.create({
     color: '#FF5A5A',
     fontSize: 12,
     marginBottom: 10,
+  },
+  togglePassword: {
+    position: 'absolute',
+    right: 15,
+    top: 15,
+    color: colors.primaryColor,
+    fontWeight: 'bold',
   },
   button: {
     backgroundColor: colors.primaryColor,

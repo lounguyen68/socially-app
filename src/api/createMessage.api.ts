@@ -1,11 +1,11 @@
 import { MessageType, Routes } from '../constants';
 import { httpService } from '../services';
-import { Conversation } from './getConversations.api';
-import { Message } from './getMessages.api';
+import { Attachment, Message } from './getMessages.api';
 
 export interface CreateMessagePayload {
   type: MessageType;
   content?: string;
+  attachments?: Attachment[];
   sender: string;
   conversation: string;
 }

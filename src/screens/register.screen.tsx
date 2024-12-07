@@ -6,35 +6,41 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
+import { Formik } from 'formik';
 import { LoginScreenProps } from '@/type';
 import { usePopup } from '../context';
-import { colors } from '../constants';
+import { colors, registerValidationSchema } from '../constants';
 import { apiRegister } from '../api/register.api';
 
 const RegisterScreen = ({ navigation }: LoginScreenProps) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { showPopup } = usePopup();
 
-  const handleRegister = () => {
-    setLoading(true);
-    apiRegister({
-      name: username,
-      email,
-      password,
-    })
-      .then(() => navigateToLogin())
-      .catch((error) => {
-        showPopup(error.message);
-      })
-      .finally(() => setLoading(true));
-  };
-
-  const navigateToLogin = () => {
-    navigation.navigate('login');
+  const handleRegister = async (
+    values: { username: string; email: string; password: string },
+    setSubmitting: (isSubmitting: boolean) => void,
+  ) => {
+    setSubmitting(true);
+    try {
+      await apiRegister({
+        name: values.username,
+        email: values.email,
+        password: values.password,
+      });
+      navigation.navigate('login');
+      ToastAndroid.show(
+        'Welcome to Socially! Thanks for signing up.',
+        ToastAndroid.SHORT,
+      );
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || 'Registration failed';
+      showPopup(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -43,52 +49,75 @@ const RegisterScreen = ({ navigation }: LoginScreenProps) => {
         <Text style={styles.title}>Sign up to Socially</Text>
       </View>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-        {/* {usernameError ? (
-          <Text style={styles.errorText}>{usernameError}</Text>
-        ) : null} */}
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {/* {passwordError ? (
-          <Text style={styles.errorText}>{passwordError}</Text>
-        ) : null} */}
-
-        <TouchableOpacity
-          style={[styles.button, loading && styles.disabledButton]}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.primaryColor} />
-          ) : (
-            <Text style={styles.buttonText}>Register</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      <Formik
+        initialValues={{ username: '', email: '', password: '' }}
+        validationSchema={registerValidationSchema}
+        onSubmit={(values, { setSubmitting }) => {
+          handleRegister(values, setSubmitting);
+        }}
+        validateOnChange={false}
+      >
+        {({ handleChange, handleSubmit, values, errors, isSubmitting }) => (
+          <View style={styles.form}>
+            <TextInput
+              style={[styles.input, errors.username && styles.errorInput]}
+              placeholder="Username"
+              onChangeText={handleChange('username')}
+              value={values.username}
+            />
+            {errors.username && (
+              <Text style={styles.errorText}>{errors.username}</Text>
+            )}
+            <TextInput
+              style={[styles.input, errors.email && styles.errorInput]}
+              placeholder="Email"
+              onChangeText={handleChange('email')}
+              value={values.email}
+              keyboardType="email-address"
+            />
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+            )}
+            <View>
+              <TextInput
+                style={[styles.input, errors.password && styles.errorInput]}
+                placeholder="Password"
+                secureTextEntry={!showPassword}
+                onChangeText={handleChange('password')}
+                value={values.password}
+              />
+              <Text
+                style={styles.togglePassword}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </Text>
+            </View>
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
+            <TouchableOpacity
+              style={[styles.button, isSubmitting && styles.disabledButton]}
+              onPress={handleSubmit as any}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color={colors.whiteColor} />
+              ) : (
+                <Text style={styles.buttonText}>Register</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </Formik>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           You have an account?{' '}
-          <Text style={styles.footerLink} onPress={navigateToLogin}>
+          <Text
+            style={styles.footerLink}
+            onPress={() => navigation.navigate('login')}
+          >
             Sign in, here!
           </Text>
         </Text>
@@ -118,12 +147,27 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    backgroundColor: colors.lightGrayColor,
+    backgroundColor: colors.lightWhiteColor,
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+  },
+  errorInput: {
+    borderColor: '#FF5A5A',
     borderWidth: 1,
-    borderColor: '#444',
+  },
+  togglePassword: {
+    position: 'absolute',
+    right: 15,
+    top: 15,
+    color: colors.primaryColor,
+    fontWeight: 'bold',
+  },
+  clearInput: {
+    color: colors.secondaryColor,
+    textAlign: 'right',
+    marginBottom: 10,
+    fontSize: 12,
   },
   errorText: {
     color: '#FF5A5A',
