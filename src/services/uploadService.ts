@@ -6,8 +6,10 @@ import { UploadType } from '../constants';
 class UploadService {
   async singleUpload(attachment: Attachment, uploadType: UploadType) {
     try {
+      const timestamp = new Date().getTime();
+
       const payload = {
-        key: attachment.name,
+        key: timestamp + attachment.name,
         contentType: attachment.metadata.mimeType,
         uploadType: uploadType,
       };
