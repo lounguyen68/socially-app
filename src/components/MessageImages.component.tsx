@@ -68,8 +68,8 @@ export default function MessageImages({
           style={{
             width: IMAGE_SIZE,
             height:
-              (IMAGE_SIZE * attachments[0].metadata.height) /
-              attachments[0].metadata.width,
+              (IMAGE_SIZE * (attachments[0].metadata?.height ?? 1)) /
+              (attachments[0].metadata.width ?? 1),
           }}
         />
       ) : (

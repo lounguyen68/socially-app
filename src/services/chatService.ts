@@ -65,6 +65,8 @@ class ChatService {
             };
           })
           .filter((item) => !!item);
+
+        if (!attachments.length) return null;
       }
 
       const message = await apiCreateMessage({

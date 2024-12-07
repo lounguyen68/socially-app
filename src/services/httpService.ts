@@ -1,6 +1,4 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { API_URL } from '@env';
-
 class HttpService {
   private api: AxiosInstance;
   private token: string | null;
@@ -85,4 +83,4 @@ class HttpService {
   }
 }
 
-export const httpService = new HttpService(API_URL);
+export const httpService = new HttpService(process.env.EXPO_PUBLIC_API_URL);

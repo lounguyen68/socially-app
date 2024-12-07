@@ -59,6 +59,7 @@ export function MessageScreen({ navigation }: any) {
         // setSearch={setSearchStr}
       />
       <FlatList
+        contentContainerStyle={{ paddingBottom: 20 }}
         style={styles.list}
         data={conversations}
         renderItem={renderItem}
@@ -82,6 +83,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.whiteColor,
   },
   list: {
-    flex: 1,
+    margin: 4,
   },
 });

@@ -8,8 +8,8 @@ export interface Attachment {
   path: string;
   metadata: {
     mimeType: string;
-    width: number;
-    height: number;
+    width?: number;
+    height?: number;
     size: number;
   };
   conversation?: string;

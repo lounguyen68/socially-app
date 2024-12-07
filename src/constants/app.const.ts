@@ -25,3 +25,6 @@ export enum ServerEmitMessages {
   NEW_MESSAGE = 'NEW_MESSAGE',
   NEW_CONVERSATION = 'NEW_CONVERSATION',
 }
+
+export const LOGO_APP =
+  'https://socially-s3.s3.ap-southeast-1.amazonaws.com/avatar/socially-icon.png';

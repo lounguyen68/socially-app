@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { API_URL } from '@env';
 import { ServerEmitMessages } from '../constants';
 import { Message } from '../api/getMessages.api';
 import { useDispatch } from 'react-redux';
@@ -12,7 +11,7 @@ import {
 import { Conversation } from '../api/getConversations.api';
 import { useServices } from './Services.context';
 
-const SOCKET_URL = `${API_URL}/socket.io`;
+const SOCKET_URL = `${process.env.EXPO_PUBLIC_API_URL}/socket.io`;
 
 interface SocketContextType {
   socket: Socket | null;

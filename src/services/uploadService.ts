@@ -14,7 +14,7 @@ class UploadService {
 
       const { url } = await apiSignedUrl(payload);
 
-      if (!url) return;
+      if (!url) return undefined;
 
       const file = await fetch(attachment.path);
 
@@ -23,7 +23,7 @@ class UploadService {
         body: await file.blob(),
       });
 
-      if (!response.ok) return console.error(response);
+      if (!response.ok) return undefined;
 
       return url.split('?')?.[0];
     } catch (error) {

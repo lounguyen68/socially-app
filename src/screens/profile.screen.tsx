@@ -58,7 +58,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         storageService.clearUserInfo();
         dispatch(logout());
         dispatch(setConversations({ conversations: [], isRefreshing: true }));
-        navigation.navigate('login');
+        navigation.replace('login');
       })
       .catch((err) => {
         console.error(err);

@@ -7,6 +7,7 @@ import { formatTime } from '../helpers';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import MessageImages from './MessageImages.component';
+import { MessageDocuments } from './MessageDocuments';
 
 interface MessageItemProps {
   message: Message;
@@ -24,6 +25,17 @@ export default function MessageItem({ message }: MessageItemProps) {
       return (
         <MessageImages
           attachments={message.attachments}
+          isYourMessage={isYourMessage}
+        />
+      );
+    }
+
+    if (message.type === MessageType.FILE) {
+      if (!message.attachments?.length) return <></>;
+
+      return (
+        <MessageDocuments
+          documents={message.attachments}
           isYourMessage={isYourMessage}
         />
       );

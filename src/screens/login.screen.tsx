@@ -13,7 +13,8 @@ import { login } from '../redux/userSlice';
 import { LoginScreenProps } from '@/type';
 import { usePopup, useServices } from '../context';
 import { apiLogin } from '../api/login.api';
-import { colors, loginValidationSchema } from '../constants';
+import { colors, loginValidationSchema, LOGO_APP } from '../constants';
+import { Image } from 'expo-image';
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
+        <Image source={{ uri: LOGO_APP }} style={{ width: 200, height: 140 }} />
         <Text style={styles.title}>Sign in to Socially</Text>
       </View>
 
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.whiteColor,
     paddingHorizontal: 20,
+    paddingBottom: 60,
   },
   logoContainer: {
     alignItems: 'center',

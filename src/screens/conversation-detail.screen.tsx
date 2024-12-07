@@ -47,19 +47,13 @@ export const ConversationDetail = ({
   const { showPopup } = usePopup();
   const { socket } = useSocket();
   const { chatService } = useServices();
-  // const [images, setImages] = useState<ImagePicker.ImagePickerAsset[] | null>(
-  //   null,
-  // );
-  // const [documents, setDocuments] = useState<
-  //   DocumentPicker.DocumentPickerAsset[] | null
-  // >(null);
 
   const pickImages = async () => {
     ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      quality: 1,
-    }).then((result) => {
+      quality: 0.6,
+    }).then(async (result) => {
       if (result.canceled) return;
 
       const images: Attachment[] = result.assets.map((asset) => ({
@@ -73,7 +67,7 @@ export const ConversationDetail = ({
         },
       }));
 
-      sendImages(images);
+      await sendFiles(images, MessageType.IMAGE);
     });
   };
 
@@ -81,12 +75,20 @@ export const ConversationDetail = ({
     DocumentPicker.getDocumentAsync({
       type: DOCUMENT_TYPE,
       copyToCacheDirectory: true,
-      multiple: false,
-    }).then((result) => {
-      console.log(result);
-      if (!result.canceled) {
-        // setDocuments(result.assets);
-      }
+      multiple: true,
+    }).then(async (result) => {
+      if (result.canceled) return;
+
+      const documents: Attachment[] = result.assets.map((asset) => ({
+        name: asset.name,
+        path: asset.uri,
+        metadata: {
+          mimeType: asset.mimeType ?? '',
+          size: asset.size ?? 0,
+        },
+      }));
+
+      await sendFiles(documents, MessageType.FILE);
     });
   };
 
@@ -195,7 +197,7 @@ export const ConversationDetail = ({
     }
   };
 
-  const sendImages = async (images: Attachment[]) => {
+  const sendFiles = async (images: Attachment[], messageType: MessageType) => {
     if (!currentUser) return;
 
     let conversationId = _id;
@@ -235,13 +237,13 @@ export const ConversationDetail = ({
 
     const message = await chatService.createMessage({
       content: '',
-      type: MessageType.IMAGE,
+      type: messageType,
       attachments: images,
       conversationId,
       sender: senderId,
     });
 
-    if (!message) return;
+    if (!message) return showPopup('Failed to send message.');
 
     message.attachments = images;
 
@@ -269,15 +271,36 @@ export const ConversationDetail = ({
         inverted={true}
       />
       <View style={styles.inputContainer}>
-        <Icon name="album" size={30} onPress={pickImages} />
-        <Icon name="attachment" size={30} onPress={pickDocuments} />
+        <Icon
+          name="album"
+          size={30}
+          onPress={pickImages}
+          style={{
+            marginRight: 8,
+          }}
+        />
+        <Icon
+          name="attachment"
+          size={30}
+          onPress={pickDocuments}
+          style={{
+            marginRight: 8,
+          }}
+        />
         <ChatInput
           placeholder="Write a message"
           style={styles.input}
           value={text}
           setValue={setText}
         />
-        <Icon name="send" size={30} onPress={sendMessage} />
+        <Icon
+          name="send"
+          size={30}
+          onPress={sendMessage}
+          style={{
+            margin: 4,
+          }}
+        />
       </View>
     </View>
   );

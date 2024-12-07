@@ -18,25 +18,49 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
   const [searchStr, setSearchStr] = useState<string>('');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [skip, setSkip] = useState<number>(0);
+
+  const fetchUsers = async (isLoadMore = false) => {
+    if ((isLoadMore && !hasMore) || (isLoadMore && loadingMore)) return;
+
+    if (!isLoadMore) {
+      setLoading(true);
+      setSkip(0); // Reset skip khi tìm kiếm mới
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const data = await apiGetUsers({
+        limit: DEFAULT_LIMIT,
+        skip: isLoadMore ? skip : 0,
+        keyword: searchStr,
+      });
+
+      if (isLoadMore) {
+        setUsers((prev) => [...prev, ...data]);
+      } else {
+        setUsers(data);
+      }
+
+      setHasMore(data.length === DEFAULT_LIMIT); // Kiểm tra nếu còn dữ liệu
+      setSkip((prev) => prev + data.length); // Cập nhật skip
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      if (isLoadMore) setLoadingMore(false);
+      else setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!searchStr) return setUsers([]);
-
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await apiGetUsers({
-          limit: DEFAULT_LIMIT,
-          skip: 0,
-          keyword: searchStr,
-        });
-        setUsers(data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!searchStr) {
+      setUsers([]);
+      setHasMore(true); // Reset trạng thái khi xóa từ khóa
+      return;
+    }
 
     fetchUsers();
   }, [searchStr]);
@@ -48,7 +72,7 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
         search={searchStr}
         setSearch={setSearchStr}
       />
-      {loading && (
+      {loading && !loadingMore && (
         <ActivityIndicator
           size="large"
           color={colors.primaryColor}
@@ -56,11 +80,19 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
         />
       )}
       <FlatList
+        style={styles.list}
         data={users}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => <UserItem item={item} />}
         ListEmptyComponent={
           <Text style={{ textAlign: 'center' }}>No users found</Text>
+        }
+        onEndReached={() => fetchUsers(true)}
+        onEndReachedThreshold={1}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color={colors.primaryColor} />
+          ) : null
         }
       />
     </View>
@@ -72,21 +104,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.whiteColor,
   },
+  list: {
+    margin: 4,
+  },
   loader: {
     marginTop: 20,
-  },
-  userItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grayColor,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.primaryColor,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: colors.secondaryColor,
   },
 });

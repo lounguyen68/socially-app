@@ -11,8 +11,9 @@ import {
 import { Formik } from 'formik';
 import { LoginScreenProps } from '@/type';
 import { usePopup } from '../context';
-import { colors, registerValidationSchema } from '../constants';
+import { colors, LOGO_APP, registerValidationSchema } from '../constants';
 import { apiRegister } from '../api/register.api';
+import { Image } from 'expo-image';
 
 const RegisterScreen = ({ navigation }: LoginScreenProps) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,10 +31,7 @@ const RegisterScreen = ({ navigation }: LoginScreenProps) => {
         password: values.password,
       });
       navigation.navigate('login');
-      ToastAndroid.show(
-        'Welcome to Socially! Thanks for signing up.',
-        ToastAndroid.SHORT,
-      );
+      ToastAndroid.show('Welcome to Socially!', ToastAndroid.SHORT);
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || 'Registration failed';
@@ -46,6 +44,7 @@ const RegisterScreen = ({ navigation }: LoginScreenProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
+        <Image source={{ uri: LOGO_APP }} style={{ width: 200, height: 140 }} />
         <Text style={styles.title}>Sign up to Socially</Text>
       </View>
 
@@ -133,6 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.whiteColor,
     paddingHorizontal: 20,
+    paddingBottom: 60,
   },
   logoContainer: {
     alignItems: 'center',
