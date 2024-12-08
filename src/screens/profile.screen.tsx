@@ -20,7 +20,7 @@ import { useCallback, useState } from 'react';
 
 export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const { user } = useSelector((state: RootState) => state.user);
-  const { storageService, userService } = useServices();
+  const { http, storageService, userService } = useServices();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const { showPopup } = usePopup();
@@ -53,12 +53,17 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
 
   const handleLogout = () => {
     apiLogout()
-      .then(() => {
-        storageService.clearRefreshToken();
-        storageService.clearUserInfo();
-        dispatch(logout());
+      .then(async () => {
         dispatch(setConversations({ conversations: [], isRefreshing: true }));
-        navigation.replace('login');
+        http.setToken('');
+        await storageService.clearRefreshToken();
+        await storageService.clearUserInfo();
+        // navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: 'login' }],
+        // });
+        dispatch(logout());
+        ``;
       })
       .catch((err) => {
         console.error(err);

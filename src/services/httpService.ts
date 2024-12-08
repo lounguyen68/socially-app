@@ -28,6 +28,10 @@ class HttpService {
     this.api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
+  getToken() {
+    return this.token;
+  }
+
   private async makeRequest<T>(
     method: AxiosRequestConfig['method'],
     url: string,

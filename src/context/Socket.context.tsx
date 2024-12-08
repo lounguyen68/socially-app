@@ -24,7 +24,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const dispatch = useDispatch();
-  const { chatService } = useServices();
+  const { http, chatService } = useServices();
 
   const handleNewMessage = (message: Message) => {
     console.log('handleNewMessage');
@@ -48,6 +48,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const newSocket = io(SOCKET_URL, {
       transports: ['websocket'],
+      auth: {
+        token: http.getToken(),
+      },
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 2000,

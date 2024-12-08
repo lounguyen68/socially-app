@@ -32,7 +32,11 @@ const MainNavigator = () => {
     return <AuthStackScreen />;
   }
 
-  return <TabsComponent />;
+  return (
+    <SocketProvider>
+      <TabsComponent />
+    </SocketProvider>
+  );
 };
 
 export default function App() {
@@ -54,12 +58,10 @@ export default function App() {
     <NavigationContainer>
       <Provider store={store}>
         <ServiceProvider>
-          <SocketProvider>
-            <PopupProvider>
-              <MainNavigator />
-              <StatusBar style="auto" />
-            </PopupProvider>
-          </SocketProvider>
+          <PopupProvider>
+            <MainNavigator />
+            <StatusBar style="auto" />
+          </PopupProvider>
         </ServiceProvider>
       </Provider>
     </NavigationContainer>

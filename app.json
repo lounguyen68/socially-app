@@ -4,7 +4,7 @@
     "slug": "socially",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/socially-icon.png",
     "scheme": "socially-app",
     "userInterfaceStyle": "automatic",
     "splash": {
