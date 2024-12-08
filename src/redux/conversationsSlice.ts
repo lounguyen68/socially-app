@@ -66,9 +66,37 @@ const conversationsSlice = createSlice({
       );
       state.conversations.unshift(updatedConversation);
     },
+    updateLastTimeSeen: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        userId: string;
+        time: string;
+      }>,
+    ) => {
+      const { conversationId, userId, time } = action.payload;
+
+      const conversation = state.conversations.find(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (!conversation) return;
+
+      const member = conversation.members.find(
+        (member) => member.user._id === userId,
+      );
+
+      if (!member) return;
+
+      member.lastTimeSeen = time;
+    },
   },
 });
 
-export const { setConversations, setNewConversation, setLastMessage } =
-  conversationsSlice.actions;
+export const {
+  setConversations,
+  setNewConversation,
+  setLastMessage,
+  updateLastTimeSeen,
+} = conversationsSlice.actions;
 export default conversationsSlice.reducer;

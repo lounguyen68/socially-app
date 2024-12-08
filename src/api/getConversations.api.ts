@@ -7,7 +7,7 @@ import { User } from './login.api';
 export interface Member {
   _id: string;
   user: User;
-  lastTimeSeen: number;
+  lastTimeSeen: string;
 }
 
 export interface Conversation {

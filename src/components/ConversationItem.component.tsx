@@ -91,7 +91,10 @@ export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
           )}
         </View>
         {item?.lastMessage && (
-          <Text style={styles.message} numberOfLines={1}>
+          <Text
+            style={[styles.message, isReaded ? {} : styles.unReadMessage]}
+            numberOfLines={1}
+          >
             {`${senderContent}: ${lastMessageContent}`}
           </Text>
         )}
@@ -128,7 +131,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     flex: 1,
   },
   timestamp: {
@@ -139,6 +142,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.grayColor,
     opacity: 0.8,
+  },
+  unReadMessage: {
+    fontWeight: 'bold',
   },
   unreadIndicator: {
     position: 'absolute',

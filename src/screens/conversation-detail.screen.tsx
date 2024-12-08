@@ -20,6 +20,7 @@ import { usePopup, useServices, useSocket } from '../context';
 import {
   setLastMessage,
   setNewConversation,
+  updateLastTimeSeen,
 } from '../redux/conversationsSlice';
 
 const { height } = Dimensions.get('window');
@@ -47,6 +48,26 @@ export const ConversationDetail = ({
   const { showPopup } = usePopup();
   const { socket } = useSocket();
   const { chatService } = useServices();
+
+  useEffect(() => {
+    socket?.emit(ClientEmitMessages.JOIN_CONVERSATION, _id);
+
+    return () => {
+      socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
+    };
+  }, [_id]);
+
+  useEffect(() => {
+    if (_id && currentUser) {
+      dispatch(
+        updateLastTimeSeen({
+          conversationId: _id,
+          userId: currentUser?._id,
+          time: new Date().toISOString(),
+        }),
+      );
+    }
+  }, [_id, messages]);
 
   const pickImages = async () => {
     ImagePicker.launchImageLibraryAsync({
@@ -192,6 +213,13 @@ export const ConversationDetail = ({
     if (message) {
       dispatch(setNewMessage(message));
       dispatch(setLastMessage({ conversationId, message }));
+      dispatch(
+        updateLastTimeSeen({
+          conversationId,
+          userId: currentUser?._id,
+          time: new Date(message.createdAt).toISOString(),
+        }),
+      );
       setText('');
       socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
     }
@@ -249,6 +277,13 @@ export const ConversationDetail = ({
 
     dispatch(setNewMessage(message));
     dispatch(setLastMessage({ conversationId, message }));
+    dispatch(
+      updateLastTimeSeen({
+        conversationId,
+        userId: currentUser?._id,
+        time: new Date(message.createdAt).toISOString(),
+      }),
+    );
     setText('');
     socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
   };

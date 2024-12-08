@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { io, Socket } from 'socket.io-client';
 import { ServerEmitMessages } from '../constants';
 import { Message } from '../api/getMessages.api';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setNewMessage } from '../redux/chatRoomSlice';
 import {
   setLastMessage,
@@ -10,6 +16,7 @@ import {
 } from '../redux/conversationsSlice';
 import { Conversation } from '../api/getConversations.api';
 import { useServices } from './Services.context';
+import { RootState } from '../redux/store';
 
 const SOCKET_URL = `${process.env.EXPO_PUBLIC_API_URL}/socket.io`;
 
@@ -25,25 +32,40 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   const dispatch = useDispatch();
   const { http, chatService } = useServices();
+  const { user } = useSelector((state: RootState) => state.user);
+  const { _id } = useSelector((state: RootState) => state.chatRoom);
 
-  const handleNewMessage = (message: Message) => {
-    console.log('handleNewMessage');
-    dispatch(setNewMessage(message));
-    dispatch(setLastMessage({ conversationId: message.conversation, message }));
-  };
+  const handleNewMessage = useCallback(
+    (message: Message) => {
+      dispatch(
+        setLastMessage({ conversationId: message.conversation, message }),
+      );
+      if (_id !== message.conversation) return;
 
-  const handleNewConversation = (conversation: Conversation) => {
-    console.log('handleNewConversation');
+      dispatch(setNewMessage(message));
+    },
+    [_id],
+  );
 
-    chatService
-      .getConversationById(conversation._id)
-      .then((data) => {
-        if (!data) return;
+  const handleNewConversation = useCallback(
+    (conversation: Conversation) => {
+      const isYourConversation = conversation.members.some(
+        (member) => member.user._id === user?._id,
+      );
 
-        dispatch(setNewConversation({ conversation: data }));
-      })
-      .catch((error) => {});
-  };
+      if (!isYourConversation) return;
+
+      chatService
+        .getConversationById(conversation._id)
+        .then((data) => {
+          if (!data) return;
+
+          dispatch(setNewConversation({ conversation: data }));
+        })
+        .catch((error) => {});
+    },
+    [user],
+  );
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL, {
@@ -67,16 +89,21 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     newSocket.on('disconnect', (reason) => {});
 
-    newSocket.on(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
-
-    newSocket.on(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
-
     return () => {
       newSocket.disconnect();
-      newSocket.off(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
-      newSocket.off(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
     };
   }, []);
+
+  useEffect(() => {
+    socket?.on(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
+
+    socket?.on(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
+
+    return () => {
+      socket?.off(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
+      socket?.off(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
+    };
+  }, [socket, _id, user]);
 
   return (
     <SocketContext.Provider value={{ socket }}>

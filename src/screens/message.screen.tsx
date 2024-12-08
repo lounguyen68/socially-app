@@ -9,6 +9,7 @@ import { ConversationItem } from '../components/ConversationItem.component';
 import { colors } from '../constants';
 import SearchInput from '../components/SearchInput.component';
 import { RefreshControl } from 'react-native-gesture-handler';
+import { isBefore } from '../helpers';
 
 const DEFAULT_LIMIT = 10;
 
@@ -18,6 +19,7 @@ export function MessageScreen({ navigation }: any) {
   const { conversations } = useSelector(
     (state: RootState) => state.conversations,
   );
+  const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const { showPopup } = usePopup();
 
@@ -68,9 +70,18 @@ export function MessageScreen({ navigation }: any) {
   }, [keyword]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Conversation }) => (
-      <ConversationItem item={item} isReaded={false} />
-    ),
+    ({ item }: { item: Conversation }) => {
+      const lastMessage = item?.lastMessage;
+      const senderId = lastMessage?.sender._id;
+      const member = item.members.find(
+        (member) => member.user._id === user?._id,
+      );
+
+      const isReaded =
+        member?._id === senderId ||
+        !isBefore(member?.lastTimeSeen, lastMessage?.updatedAt);
+      return <ConversationItem item={item} isReaded={isReaded} />;
+    },
     [conversations],
   );
 

@@ -29,7 +29,7 @@ export const UserItem = ({ item }: UserItemProps) => {
       };
 
       const payload = {
-        id: data?._id,
+        _id: data?._id,
         conversation: data,
         messages: [],
       };

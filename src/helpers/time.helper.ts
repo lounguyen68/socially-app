@@ -22,3 +22,10 @@ export const formatTime = (timeString: Date): string => {
 
   return `${date}/${month}/${year}`;
 };
+
+export const isBefore = (first?: Date | string, second?: Date | string) => {
+  const firstTime = first ? new Date(first) : new Date();
+  const secondTime = second ? new Date(second) : new Date();
+
+  return firstTime.getTime() < secondTime.getTime();
+};
