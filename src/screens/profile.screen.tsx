@@ -83,7 +83,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
       <View style={styles.userFeatures}>
         <TouchableOpacity style={styles.userFeatureItem} onPress={handleLogout}>
           <Icon name="logout" size={28} />
-          <Text style={styles.userFeatureText}>{'Logout'}</Text>
+          <Text style={styles.userFeatureText}>{'Log out'}</Text>
         </TouchableOpacity>
       </View>
     </View>
