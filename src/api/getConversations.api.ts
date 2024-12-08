@@ -23,6 +23,7 @@ export interface Conversation {
 export interface GetConversationsPayload {
   limit: number;
   skip: number;
+  keyword?: string;
 }
 
 export const apiGetConversations = (params: GetConversationsPayload) => {

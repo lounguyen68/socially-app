@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, ToastAndroid, View } from 'react-native';
+import { FlatList, StyleSheet, View, Text } from 'react-native';
 import { usePopup } from '../context/Popup.context';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,19 +14,24 @@ const DEFAULT_LIMIT = 10;
 
 export function MessageScreen({ navigation }: any) {
   const [hasMoreConversations, setHasMoreConversations] = useState(true);
+  const [keyword, setKeyword] = useState('');
   const { conversations } = useSelector(
     (state: RootState) => state.conversations,
   );
   const dispatch = useDispatch();
   const { showPopup } = usePopup();
 
-  const fetchConversations = async (isRefreshing?: boolean) => {
-    if (!hasMoreConversations && !isRefreshing) return;
+  const fetchConversations = async (
+    isRefreshing?: boolean,
+    newKeyword?: string,
+  ) => {
+    if (!hasMoreConversations && !isRefreshing && !newKeyword) return;
 
     try {
       const data = await apiGetConversations({
         limit: DEFAULT_LIMIT,
         skip: isRefreshing ? 0 : conversations.length,
+        keyword: newKeyword ?? keyword,
       });
 
       dispatch(
@@ -38,11 +43,29 @@ export function MessageScreen({ navigation }: any) {
 
       if (data.length < DEFAULT_LIMIT) {
         setHasMoreConversations(false);
+      } else {
+        setHasMoreConversations(true);
       }
     } catch (error) {
       showPopup('Failed to load conversations.');
     }
   };
+
+  const loadMoreConversations = () => {
+    if (!keyword && !conversations.length) return;
+
+    if (!hasMoreConversations) return;
+    fetchConversations();
+  };
+
+  const refreshConversations = () => {
+    setHasMoreConversations(true);
+    fetchConversations(true, keyword);
+  };
+
+  useEffect(() => {
+    fetchConversations(true, keyword);
+  }, [keyword]);
 
   const renderItem = useCallback(
     ({ item }: { item: Conversation }) => (
@@ -55,22 +78,25 @@ export function MessageScreen({ navigation }: any) {
     <View style={styles.container}>
       <SearchInput
         placeholder="Search for conversations"
-        // search={searchStr}
-        // setSearch={setSearchStr}
+        search={keyword}
+        setSearch={setKeyword}
       />
       <FlatList
-        contentContainerStyle={{ paddingBottom: 20 }}
         style={styles.list}
         data={conversations}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
-        onEndReached={() => fetchConversations()}
+        onEndReached={loadMoreConversations}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl
-            refreshing={false}
-            onRefresh={() => fetchConversations(true)}
-          />
+          <RefreshControl refreshing={false} onRefresh={refreshConversations} />
+        }
+        ListEmptyComponent={
+          <View>
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              No conversations found
+            </Text>
+          </View>
         }
       />
     </View>

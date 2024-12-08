@@ -27,7 +27,7 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
 
     if (!isLoadMore) {
       setLoading(true);
-      setSkip(0); // Reset skip khi tìm kiếm mới
+      setSkip(0);
     } else {
       setLoadingMore(true);
     }
@@ -45,8 +45,8 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
         setUsers(data);
       }
 
-      setHasMore(data.length === DEFAULT_LIMIT); // Kiểm tra nếu còn dữ liệu
-      setSkip((prev) => prev + data.length); // Cập nhật skip
+      setHasMore(data.length === DEFAULT_LIMIT);
+      setSkip((prev) => prev + data.length);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -58,7 +58,7 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
   useEffect(() => {
     if (!searchStr) {
       setUsers([]);
-      setHasMore(true); // Reset trạng thái khi xóa từ khóa
+      setHasMore(true);
       return;
     }
 
@@ -85,7 +85,11 @@ export const SearchScreen = ({ navigation }: SearchScreenProps) => {
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => <UserItem item={item} />}
         ListEmptyComponent={
-          <Text style={{ textAlign: 'center' }}>No users found</Text>
+          <View>
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              No users found
+            </Text>
+          </View>
         }
         onEndReached={() => fetchUsers(true)}
         onEndReachedThreshold={1}
