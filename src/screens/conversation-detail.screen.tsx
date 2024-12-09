@@ -54,6 +54,23 @@ export const ConversationDetail = ({
 
     return () => {
       socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
+      _id &&
+        currentUser &&
+        dispatch(
+          updateLastTimeSeen({
+            conversationId: _id,
+            userId: currentUser?._id,
+            time: new Date().toISOString(),
+          }),
+        );
+
+      dispatch(
+        setChatRoom({
+          _id: undefined,
+          conversation: undefined,
+          messages: [],
+        }),
+      );
     };
   }, [_id]);
 
@@ -88,7 +105,7 @@ export const ConversationDetail = ({
         },
       }));
 
-      await sendFiles(images, MessageType.IMAGE);
+      await sendAttachments(images, MessageType.IMAGE);
     });
   };
 
@@ -109,7 +126,7 @@ export const ConversationDetail = ({
         },
       }));
 
-      await sendFiles(documents, MessageType.FILE);
+      await sendAttachments(documents, MessageType.FILE);
     });
   };
 
@@ -225,7 +242,10 @@ export const ConversationDetail = ({
     }
   };
 
-  const sendFiles = async (images: Attachment[], messageType: MessageType) => {
+  const sendAttachments = async (
+    attachments: Attachment[],
+    messageType: MessageType,
+  ) => {
     if (!currentUser) return;
 
     let conversationId = _id;
@@ -266,14 +286,12 @@ export const ConversationDetail = ({
     const message = await chatService.createMessage({
       content: '',
       type: messageType,
-      attachments: images,
+      attachments: attachments,
       conversationId,
       sender: senderId,
     });
 
     if (!message) return showPopup('Failed to send message.');
-
-    message.attachments = images;
 
     dispatch(setNewMessage(message));
     dispatch(setLastMessage({ conversationId, message }));
