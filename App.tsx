@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import TabsComponent from './src/components/Tabs.component';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './src/redux/store';
@@ -14,6 +15,15 @@ import {
 } from './src/context';
 import { RootState } from './src/redux/store';
 import { AuthStackScreen } from './src/navigation';
+import { NotificationProvider } from './src/context/Notification.context';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,12 +67,14 @@ export default function App() {
   return (
     <NavigationContainer>
       <Provider store={store}>
-        <ServiceProvider>
-          <PopupProvider>
-            <MainNavigator />
-            <StatusBar style="auto" />
-          </PopupProvider>
-        </ServiceProvider>
+        <NotificationProvider>
+          <ServiceProvider>
+            <PopupProvider>
+              <MainNavigator />
+              <StatusBar style="auto" />
+            </PopupProvider>
+          </ServiceProvider>
+        </NotificationProvider>
       </Provider>
     </NavigationContainer>
   );
