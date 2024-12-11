@@ -32,6 +32,8 @@ const DOCUMENT_TYPE = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ];
 const DEFAULT_LIMIT = 15;
+const DEFAULT_LIMIT_ATTACHMENT = 5;
+const DEFAULT_LIMIT_ATTACHMENT_SIZE = 1000 * 1000 * 500; // 500MB
 
 export const ConversationDetail = ({
   navigation,
@@ -246,6 +248,17 @@ export const ConversationDetail = ({
     attachments: Attachment[],
     messageType: MessageType,
   ) => {
+    if (attachments.length > DEFAULT_LIMIT_ATTACHMENT)
+      return showPopup('Send a maximum of 5 attachments at a time');
+
+    const totalAttachmentSize = attachments.reduce(
+      (acc, attachment) => acc + attachment.metadata.size,
+      0,
+    );
+
+    if (totalAttachmentSize > DEFAULT_LIMIT_ATTACHMENT_SIZE)
+      return showPopup('Send a maximum of 500MB at a time');
+
     if (!currentUser) return;
 
     let conversationId = _id;
