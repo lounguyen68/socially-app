@@ -27,6 +27,7 @@ export interface Message {
   attachments?: Attachment[];
   createdAt: Date;
   updatedAt: Date;
+  isEncrypted?: boolean;
 }
 
 export interface GetMessagesPayload {

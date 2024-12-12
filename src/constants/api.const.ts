@@ -13,4 +13,5 @@ export enum Routes {
   CREATE_MESSAGE = '/messages',
 
   SIGNED_URL = '/files/signed-url',
+  UPDATE_MEMBER = '/members/update',
 }

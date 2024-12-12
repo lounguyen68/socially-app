@@ -6,10 +6,12 @@ import { RootState } from '../redux/store';
 import { apiGetConversations, Conversation } from '../api/getConversations.api';
 import { setConversations } from '../redux/conversationsSlice';
 import { ConversationItem } from '../components/ConversationItem.component';
-import { colors } from '../constants';
+import { colors, MessageType } from '../constants';
 import SearchInput from '../components/SearchInput.component';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { isBefore } from '../helpers';
+import { generateSharedKey, isBefore } from '../helpers';
+import { useServices } from '../context';
+import { messageV2 } from '../helpers/message.helper';
 
 const DEFAULT_LIMIT = 10;
 
@@ -22,6 +24,7 @@ export function MessageScreen({ navigation }: any) {
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const { showPopup } = usePopup();
+  const { storageService, chatService } = useServices();
 
   const fetchConversations = async (
     isRefreshing?: boolean,
@@ -30,11 +33,68 @@ export function MessageScreen({ navigation }: any) {
     if (!hasMoreConversations && !isRefreshing && !newKeyword) return;
 
     try {
-      const data = await apiGetConversations({
+      let data = await apiGetConversations({
         limit: DEFAULT_LIMIT,
         skip: isRefreshing ? 0 : conversations.length,
         keyword: newKeyword ?? keyword,
       });
+
+      data = await Promise.all(
+        data.map(async (conversation) => {
+          const privateKey = await storageService.getConversationPrivateKey(
+            conversation._id,
+          );
+
+          const otherMember = conversation.members?.find(
+            (member) => member.user._id !== user?._id,
+          );
+
+          if (!privateKey) {
+            const sharedKey = await chatService.generateConversationSharedKey(
+              conversation,
+              user?._id,
+            );
+
+            const lastMessage =
+              conversation.lastMessage.type === MessageType.TEXT && sharedKey
+                ? await messageV2(
+                    conversation.lastMessage,
+                    sharedKey.toString(16).slice(0, 32),
+                  )
+                : conversation.lastMessage;
+
+            return {
+              ...conversation,
+              sharedKey: sharedKey
+                ? sharedKey.toString(16).slice(0, 32)
+                : undefined,
+              lastMessage: lastMessage,
+            };
+          }
+
+          if (!otherMember?.publicKey || !otherMember.p || !otherMember.g)
+            return conversation;
+
+          const sharedKey = generateSharedKey(
+            BigInt(otherMember.publicKey),
+            BigInt(privateKey),
+            BigInt(otherMember.p),
+          )
+            .toString(16)
+            .slice(0, 32);
+
+          const lastMessage =
+            conversation.lastMessage.type === MessageType.TEXT
+              ? await messageV2(conversation.lastMessage, sharedKey)
+              : conversation.lastMessage;
+
+          return {
+            ...conversation,
+            sharedKey: sharedKey,
+            lastMessage: lastMessage,
+          };
+        }),
+      );
 
       dispatch(
         setConversations({

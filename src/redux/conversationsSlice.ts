@@ -90,6 +90,23 @@ const conversationsSlice = createSlice({
 
       member.lastTimeSeen = time;
     },
+    setSharedKey: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        sharedKey: string;
+      }>,
+    ) => {
+      const { conversationId, sharedKey } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex].sharedKey = sharedKey;
+    },
   },
 });
 
@@ -98,5 +115,6 @@ export const {
   setNewConversation,
   setLastMessage,
   updateLastTimeSeen,
+  setSharedKey,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

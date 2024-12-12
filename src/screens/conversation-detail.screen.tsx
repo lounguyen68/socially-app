@@ -22,6 +22,7 @@ import {
   setNewConversation,
   updateLastTimeSeen,
 } from '../redux/conversationsSlice';
+import { decryptMessages } from '../helpers/message.helper';
 
 const { height } = Dimensions.get('window');
 const DOCUMENT_TYPE = [
@@ -172,7 +173,9 @@ export const ConversationDetail = ({
         conversationId: _id,
       });
 
-      dispatch(setMessages(data));
+      const decryptedMessages = await decryptMessages(data, conversation);
+
+      dispatch(setMessages(decryptedMessages));
 
       if (data.length < DEFAULT_LIMIT) {
         setHasMoreMessages(false);
@@ -182,7 +185,7 @@ export const ConversationDetail = ({
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!currentUser) return;
 
     if (!text.trim()) return;
@@ -227,6 +230,7 @@ export const ConversationDetail = ({
       type: MessageType.TEXT,
       conversationId: conversationId,
       sender: senderId,
+      sharedKey: conversation?.sharedKey,
     });
 
     if (message) {
@@ -242,82 +246,86 @@ export const ConversationDetail = ({
       setText('');
       socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
     }
-  };
+  }, [_id, conversation, currentUser, text]);
 
-  const sendAttachments = async (
-    attachments: Attachment[],
-    messageType: MessageType,
-  ) => {
-    if (attachments.length > DEFAULT_LIMIT_ATTACHMENT)
-      return showPopup('Send a maximum of 5 attachments at a time');
+  const sendAttachments = useCallback(
+    async (attachments: Attachment[], messageType: MessageType) => {
+      if (attachments.length > DEFAULT_LIMIT_ATTACHMENT)
+        return showPopup('Send a maximum of 5 attachments at a time');
 
-    const totalAttachmentSize = attachments.reduce(
-      (acc, attachment) => acc + attachment.metadata.size,
-      0,
-    );
-
-    if (totalAttachmentSize > DEFAULT_LIMIT_ATTACHMENT_SIZE)
-      return showPopup('Send a maximum of 500MB at a time');
-
-    if (!currentUser) return;
-
-    let conversationId = _id;
-    let conversationData = conversation;
-
-    if (isMockConversation && user && !_id) {
-      conversationData = await chatService.createMockConversation(user._id);
-
-      if (!conversationData) return;
-
-      conversationId = conversationData._id;
-
-      dispatch(
-        setChatRoom({
-          _id: conversationId,
-          conversation: conversationData,
-          messages: [],
-        }),
+      const totalAttachmentSize = attachments.reduce(
+        (acc, attachment) => acc + attachment.metadata.size,
+        0,
       );
 
-      dispatch(setNewConversation({ conversation: conversationData }));
+      if (totalAttachmentSize > DEFAULT_LIMIT_ATTACHMENT_SIZE)
+        return showPopup('Send a maximum of 500MB at a time');
 
-      socket?.emit(ClientEmitMessages.CREATE_CONVERSATION, conversationData);
-    }
+      if (!currentUser) return;
 
-    if (!conversationId || !conversationData) {
-      navigation.goBack();
-      return;
-    }
+      let conversationId = _id;
+      let conversationData = conversation;
 
-    const senderId = chatService.getSender(conversationData, currentUser?._id);
+      if (isMockConversation && user && !_id) {
+        conversationData = await chatService.createMockConversation(user._id);
 
-    if (!senderId) {
-      navigation.goBack();
-      return;
-    }
+        if (!conversationData) return;
 
-    const message = await chatService.createMessage({
-      content: '',
-      type: messageType,
-      attachments: attachments,
-      conversationId,
-      sender: senderId,
-    });
+        conversationId = conversationData._id;
 
-    if (!message) return showPopup('Failed to send message.');
+        dispatch(
+          setChatRoom({
+            _id: conversationId,
+            conversation: conversationData,
+            messages: [],
+          }),
+        );
 
-    dispatch(setNewMessage(message));
-    dispatch(setLastMessage({ conversationId, message }));
-    dispatch(
-      updateLastTimeSeen({
+        dispatch(setNewConversation({ conversation: conversationData }));
+
+        socket?.emit(ClientEmitMessages.CREATE_CONVERSATION, conversationData);
+      }
+
+      if (!conversationId || !conversationData) {
+        navigation.goBack();
+        return;
+      }
+
+      const senderId = chatService.getSender(
+        conversationData,
+        currentUser?._id,
+      );
+
+      if (!senderId) {
+        navigation.goBack();
+        return;
+      }
+
+      const message = await chatService.createMessage({
+        content: '',
+        type: messageType,
+        attachments: attachments,
         conversationId,
-        userId: currentUser?._id,
-        time: new Date(message.createdAt).toISOString(),
-      }),
-    );
-    setText('');
-    socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
-  };
+        sender: senderId,
+        sharedKey: conversation?.sharedKey,
+      });
+
+      if (!message) return showPopup('Failed to send message.');
+
+      dispatch(setNewMessage(message));
+      dispatch(setLastMessage({ conversationId, message }));
+      dispatch(
+        updateLastTimeSeen({
+          conversationId,
+          userId: currentUser?._id,
+          time: new Date(message.createdAt).toISOString(),
+        }),
+      );
+      setText('');
+      socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
+    },
+    [_id, conversation, currentUser],
+  );
 
   const renderItem = useCallback(
     ({ item }: any) => <MessageItem message={item} />,
