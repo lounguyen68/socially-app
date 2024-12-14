@@ -5,7 +5,7 @@ import { Message } from '../api/getMessages.api';
 interface ChatRoomState {
   _id?: string;
   conversation?: Conversation;
-  messages: any[];
+  messages: Message[];
 }
 
 const initialState: ChatRoomState = {
@@ -21,12 +21,21 @@ const chatRoomSlice = createSlice({
       action: PayloadAction<{
         _id?: string;
         conversation?: Conversation;
-        messages: any[];
+        messages: Message[];
       }>,
     ) => {
       state._id = action.payload._id;
       state.conversation = action.payload.conversation;
       state.messages = action.payload.messages;
+    },
+
+    updateChatRoom: (
+      state,
+      action: PayloadAction<{
+        conversation: Conversation;
+      }>,
+    ) => {
+      state.conversation = action.payload.conversation;
     },
 
     setMessages: (state, action: PayloadAction<Message[]>) => {
@@ -39,6 +48,6 @@ const chatRoomSlice = createSlice({
   },
 });
 
-export const { setChatRoom, setMessages, setNewMessage } =
+export const { setChatRoom, updateChatRoom, setMessages, setNewMessage } =
   chatRoomSlice.actions;
 export default chatRoomSlice.reducer;

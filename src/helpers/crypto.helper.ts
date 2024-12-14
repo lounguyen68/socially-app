@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
+import CryptoJS from 'react-native-crypto-js';
 
-const modExp = (base: bigint, exp: bigint, mod: bigint): bigint => {
+export const modExp = (base: bigint, exp: bigint, mod: bigint): bigint => {
   let result = 1n;
   let b = base % mod;
   let e = exp;
@@ -94,12 +95,41 @@ const generateSafePrime = async (bitLength: number) => {
   return P;
 };
 
-export const generateDHKeys = async () => {
-  const bitLength = 256;
-  const P = await generateSafePrime(bitLength);
-  const G = generateBaseG(P);
+export const generateDHKeys = async (oldP?: bigint, oldG?: bigint) => {
+  const bitLength = 128;
+  const P = oldP ?? (await generateSafePrime(bitLength));
+  const G = oldG ?? generateBaseG(P);
   const privateKey = await generateRandom(bitLength, P - BigInt(2));
   const publicKey = generatePublicKey(G, privateKey, P);
 
   return { privateKey, publicKey, P, G };
+};
+
+export const generateSharedKey = (
+  publicKey: bigint,
+  privateKey: bigint,
+  P: bigint,
+) => {
+  return modExp(publicKey, privateKey, P);
+};
+
+export const encryptMessage = async (text: string, sharedKey: string) => {
+  try {
+    const ciphertext = CryptoJS.AES.encrypt(text, sharedKey).toString();
+
+    return ciphertext;
+  } catch (error) {
+    console.error('AES Encryption/Decryption Error:', error);
+  }
+};
+
+export const decryptMessage = async (ciphertext: string, sharedKey: string) => {
+  try {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, sharedKey);
+    const originalText = bytes.toString(CryptoJS.enc.Utf8);
+
+    return originalText;
+  } catch (error) {
+    console.error('AES Encryption/Decryption Error:', error);
+  }
 };

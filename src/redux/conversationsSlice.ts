@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../api/login.api';
-import { Conversation } from '../api/getConversations.api';
+import { Conversation, Member } from '../api/getConversations.api';
 import { Message } from '../api/getMessages.api';
 
 interface ConversationsState {
@@ -90,6 +90,70 @@ const conversationsSlice = createSlice({
 
       member.lastTimeSeen = time;
     },
+    setSharedKey: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        sharedKey: string;
+      }>,
+    ) => {
+      const { conversationId, sharedKey } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex].sharedKey = sharedKey;
+    },
+    updateMember: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        member: Member;
+      }>,
+    ) => {
+      const { conversationId, member: updatedMember } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex].members = state.conversations[
+        conversationIndex
+      ].members?.map((member) => {
+        if (member._id !== updatedMember._id) return member;
+
+        return {
+          ...member,
+          p: updatedMember.p,
+          g: updatedMember.g,
+          publicKey: updatedMember.publicKey,
+        };
+      });
+    },
+    updateConversation: (
+      state,
+      action: PayloadAction<{
+        conversation: Conversation;
+      }>,
+    ) => {
+      const { conversation } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversation._id,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex] = {
+        ...state.conversations[conversationIndex],
+        ...conversation,
+      };
+    },
   },
 });
 
@@ -98,5 +162,8 @@ export const {
   setNewConversation,
   setLastMessage,
   updateLastTimeSeen,
+  setSharedKey,
+  updateMember,
+  updateConversation,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

@@ -17,6 +17,8 @@ import filePdfIcon from '../../assets/icons/file-pdf.svg';
 import filePptIcon from '../../assets/icons/file-ppt.svg';
 import fileWordIcon from '../../assets/icons/file-word.svg';
 import fileExcelIcon from '../../assets/icons/file-excel.svg';
+import lockIcon from '../../assets/icons/lock.svg';
+import lockOpenIcon from '../../assets/icons/lock-open.svg';
 
 export const Icons: { [key: string]: string } = {
   home: homeIcon,
@@ -38,4 +40,6 @@ export const Icons: { [key: string]: string } = {
   ppt: filePptIcon,
   excel: fileExcelIcon,
   word: fileWordIcon,
+  lock: lockIcon,
+  'lock-open': lockOpenIcon,
 };

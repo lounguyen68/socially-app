@@ -9,12 +9,13 @@ import { io, Socket } from 'socket.io-client';
 import { ServerEmitMessages } from '../constants';
 import { Message } from '../api/getMessages.api';
 import { useDispatch, useSelector } from 'react-redux';
-import { setNewMessage } from '../redux/chatRoomSlice';
+import { setNewMessage, updateChatRoom } from '../redux/chatRoomSlice';
 import {
   setLastMessage,
   setNewConversation,
+  updateConversation,
 } from '../redux/conversationsSlice';
-import { Conversation } from '../api/getConversations.api';
+import { Conversation, Member } from '../api/getConversations.api';
 import { useServices } from './Services.context';
 import { RootState } from '../redux/store';
 
@@ -57,14 +58,50 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
       chatService
         .getConversationById(conversation._id)
-        .then((data) => {
+        .then(async (data) => {
           if (!data) return;
 
-          dispatch(setNewConversation({ conversation: data }));
+          const conversation = await chatService.updatedConversation(
+            data,
+            user?._id,
+          );
+
+          dispatch(setNewConversation({ conversation }));
         })
         .catch((error) => {});
     },
     [user],
+  );
+
+  const handleUpdateConversation = useCallback(
+    ({ conversation }: { conversation: Conversation }) => {
+      chatService
+        .getConversationById(conversation._id)
+        .then(async (data) => {
+          if (!data) return;
+
+          const conversation = await chatService.updatedConversation(
+            data,
+            user?._id,
+          );
+
+          dispatch(
+            updateConversation({
+              conversation: conversation,
+            }),
+          );
+
+          if (_id === conversation._id) {
+            dispatch(
+              updateChatRoom({
+                conversation: conversation,
+              }),
+            );
+          }
+        })
+        .catch((error) => {});
+    },
+    [_id, user],
   );
 
   useEffect(() => {
@@ -99,9 +136,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socket?.on(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
 
+    socket?.on(
+      ServerEmitMessages.UPDATE_CONVERSATION,
+      handleUpdateConversation,
+    );
+
     return () => {
       socket?.off(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
       socket?.off(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
+      socket?.off(
+        ServerEmitMessages.UPDATE_CONVERSATION,
+        handleUpdateConversation,
+      );
     };
   }, [socket, _id, user]);
 

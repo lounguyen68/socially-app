@@ -8,6 +8,7 @@ export interface CreateMessagePayload {
   attachments?: Attachment[];
   sender: string;
   conversation: string;
+  isEncrypted?: boolean;
 }
 
 export const apiCreateMessage = (params: CreateMessagePayload) => {

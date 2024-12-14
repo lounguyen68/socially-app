@@ -6,10 +6,12 @@ import { RootState } from '../redux/store';
 import { apiGetConversations, Conversation } from '../api/getConversations.api';
 import { setConversations } from '../redux/conversationsSlice';
 import { ConversationItem } from '../components/ConversationItem.component';
-import { colors } from '../constants';
+import { colors, MessageType } from '../constants';
 import SearchInput from '../components/SearchInput.component';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { isBefore } from '../helpers';
+import { generateSharedKey, isBefore } from '../helpers';
+import { useServices } from '../context';
+import { messageV2 } from '../helpers/message.helper';
 
 const DEFAULT_LIMIT = 10;
 
@@ -22,6 +24,7 @@ export function MessageScreen({ navigation }: any) {
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const { showPopup } = usePopup();
+  const { storageService, chatService } = useServices();
 
   const fetchConversations = async (
     isRefreshing?: boolean,
@@ -30,11 +33,18 @@ export function MessageScreen({ navigation }: any) {
     if (!hasMoreConversations && !isRefreshing && !newKeyword) return;
 
     try {
-      const data = await apiGetConversations({
+      let data = await apiGetConversations({
         limit: DEFAULT_LIMIT,
         skip: isRefreshing ? 0 : conversations.length,
         keyword: newKeyword ?? keyword,
       });
+
+      data = await Promise.all(
+        data.map(
+          async (conversation) =>
+            await chatService.updatedConversation(conversation, user?._id),
+        ),
+      );
 
       dispatch(
         setConversations({
@@ -49,6 +59,7 @@ export function MessageScreen({ navigation }: any) {
         setHasMoreConversations(true);
       }
     } catch (error) {
+      console.error(error);
       showPopup('Failed to load conversations.');
     }
   };

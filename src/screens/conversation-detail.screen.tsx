@@ -22,6 +22,7 @@ import {
   setNewConversation,
   updateLastTimeSeen,
 } from '../redux/conversationsSlice';
+import { decryptMessages } from '../helpers/message.helper';
 
 const { height } = Dimensions.get('window');
 const DOCUMENT_TYPE = [
@@ -52,41 +53,38 @@ export const ConversationDetail = ({
   const { chatService } = useServices();
 
   useEffect(() => {
-    socket?.emit(ClientEmitMessages.JOIN_CONVERSATION, _id);
+    if (_id) {
+      socket?.emit(ClientEmitMessages.JOIN_CONVERSATION, _id);
+    }
 
     return () => {
-      socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
-      _id &&
-        currentUser &&
-        dispatch(
-          updateLastTimeSeen({
-            conversationId: _id,
-            userId: currentUser?._id,
-            time: new Date().toISOString(),
-          }),
-        );
+      if (_id) {
+        socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
 
-      dispatch(
-        setChatRoom({
-          _id: undefined,
-          conversation: undefined,
-          messages: [],
-        }),
-      );
+        if (currentUser) {
+          dispatch(
+            updateLastTimeSeen({
+              conversationId: _id,
+              userId: currentUser._id,
+              time: new Date().toISOString(),
+            }),
+          );
+        }
+      }
     };
-  }, [_id]);
+  }, [_id, socket, currentUser, dispatch]);
 
   useEffect(() => {
-    if (_id && currentUser) {
+    if (_id && messages.length && currentUser) {
       dispatch(
         updateLastTimeSeen({
           conversationId: _id,
-          userId: currentUser?._id,
+          userId: currentUser._id,
           time: new Date().toISOString(),
         }),
       );
     }
-  }, [_id, messages]);
+  }, [_id, messages, currentUser, dispatch]);
 
   const pickImages = async () => {
     ImagePicker.launchImageLibraryAsync({
@@ -159,8 +157,11 @@ export const ConversationDetail = ({
         backgroundColor: colors.lightWhiteColor,
       },
       headerTitle: Header,
+      headerRight: () => (
+        <Icon name={conversation?.sharedKey ? 'lock' : 'lock-open'} size={28} />
+      ),
     });
-  }, []);
+  }, [conversation?.sharedKey]);
 
   const loadMessages = async () => {
     if (!_id || !hasMoreMessages) return;
@@ -172,7 +173,9 @@ export const ConversationDetail = ({
         conversationId: _id,
       });
 
-      dispatch(setMessages(data));
+      const decryptedMessages = await decryptMessages(data, conversation);
+
+      dispatch(setMessages(decryptedMessages));
 
       if (data.length < DEFAULT_LIMIT) {
         setHasMoreMessages(false);
@@ -227,6 +230,7 @@ export const ConversationDetail = ({
       type: MessageType.TEXT,
       conversationId: conversationId,
       sender: senderId,
+      sharedKey: conversation?.sharedKey,
     });
 
     if (message) {
@@ -302,6 +306,7 @@ export const ConversationDetail = ({
       attachments: attachments,
       conversationId,
       sender: senderId,
+      sharedKey: conversation?.sharedKey,
     });
 
     if (!message) return showPopup('Failed to send message.');

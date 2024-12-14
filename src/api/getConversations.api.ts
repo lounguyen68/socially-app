@@ -8,6 +8,9 @@ export interface Member {
   _id: string;
   user: User;
   lastTimeSeen: string;
+  p?: string;
+  g?: string;
+  publicKey?: string;
 }
 
 export interface Conversation {
@@ -18,6 +21,7 @@ export interface Conversation {
   lastMessage: Message;
   createdAt?: Date;
   updatedAt?: Date;
+  sharedKey?: string;
 }
 
 export interface GetConversationsPayload {

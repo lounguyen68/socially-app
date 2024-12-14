@@ -5,8 +5,10 @@ import { colors, ConversationType } from '../constants';
 import Icon from './Icon';
 import { useNavigation } from '@react-navigation/native';
 import { apiGetConversationByUserId } from '../api/getConversationByUserId.api';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setChatRoom } from '../redux/chatRoomSlice';
+import { useServices } from '../context';
+import { RootState } from '../redux/store';
 
 export type UserItemProps = {
   item: User;
@@ -15,6 +17,8 @@ export type UserItemProps = {
 export const UserItem = ({ item }: UserItemProps) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch<any>();
+  const { chatService } = useServices();
+  const { user } = useSelector((state: RootState) => state.user);
 
   const navigateToConversationDetail = async () => {
     try {
@@ -30,7 +34,9 @@ export const UserItem = ({ item }: UserItemProps) => {
 
       const payload = {
         _id: data?._id,
-        conversation: data,
+        conversation: data
+          ? await chatService.updatedConversation(data, user?._id)
+          : undefined,
         messages: [],
       };
 
