@@ -3,13 +3,14 @@ import { Conversation } from '../api/getConversations.api';
 import { useConversation } from '../hooks/useConversation.hook';
 import { Avatar } from './Avatar.component';
 import { formatTime } from '../helpers';
-import { colors, MessageType } from '../constants';
+import { colors, MessageType, ServerEmitMessages } from '../constants';
 import Svg, { Circle } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setChatRoom } from '../redux/chatRoomSlice';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { RootState } from '../redux/store';
+import { useSocket } from '../context';
 
 export type ConversationItemProps = {
   item: Conversation;
@@ -19,10 +20,17 @@ export type ConversationItemProps = {
 export const ConversationItem = ({ item, isReaded }: ConversationItemProps) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch<any>();
+  const { socket } = useSocket();
   const { getConversationInfo } = useConversation(item);
   const { user } = useSelector((state: RootState) => state.user);
 
   const [conversationName, conversationAvatar] = getConversationInfo();
+
+  useEffect(() => {
+    if (item.sharedKey && !item?.lastMessage.isEncrypted) {
+      socket?.emit(ServerEmitMessages.UPDATE_CONVERSATION, item);
+    }
+  }, []);
 
   const navigateToConversationDetail = () => {
     dispatch(

@@ -135,6 +135,25 @@ const conversationsSlice = createSlice({
         };
       });
     },
+    updateConversation: (
+      state,
+      action: PayloadAction<{
+        conversation: Conversation;
+      }>,
+    ) => {
+      const { conversation } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversation._id,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex] = {
+        ...state.conversations[conversationIndex],
+        ...conversation,
+      };
+    },
   },
 });
 
@@ -145,5 +164,6 @@ export const {
   updateLastTimeSeen,
   setSharedKey,
   updateMember,
+  updateConversation,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

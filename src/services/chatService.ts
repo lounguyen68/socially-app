@@ -35,6 +35,37 @@ class ChatService {
         return undefined;
       }
 
+      const member = conversation.members.find(
+        (member) => member.user._id !== userId,
+      );
+
+      if (member) {
+        const { privateKey, publicKey, P, G } = await generateDHKeys();
+
+        await apiUpdateMember({
+          memberId: member._id,
+          publicKey: publicKey.toString(),
+          p: P.toString(),
+          g: G.toString(),
+        });
+
+        await storageService.setConversationPrivateKey(
+          conversation._id,
+          privateKey.toString(),
+        );
+
+        conversation.members = conversation.members.map((member) => {
+          if (member.user._id === userId) return member;
+
+          return {
+            ...member,
+            publicKey: publicKey.toString(),
+            p: P.toString(),
+            g: G.toString(),
+          };
+        });
+      }
+
       return conversation;
     } catch (error) {
       console.error('Failed to create mock conversation:', error);
