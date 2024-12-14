@@ -53,41 +53,38 @@ export const ConversationDetail = ({
   const { chatService } = useServices();
 
   useEffect(() => {
-    socket?.emit(ClientEmitMessages.JOIN_CONVERSATION, _id);
+    if (_id) {
+      socket?.emit(ClientEmitMessages.JOIN_CONVERSATION, _id);
+    }
 
     return () => {
-      socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
-      _id &&
-        currentUser &&
-        dispatch(
-          updateLastTimeSeen({
-            conversationId: _id,
-            userId: currentUser?._id,
-            time: new Date().toISOString(),
-          }),
-        );
+      if (_id) {
+        socket?.emit(ClientEmitMessages.OUT_CONVERSATION, _id);
 
-      dispatch(
-        setChatRoom({
-          _id: undefined,
-          conversation: undefined,
-          messages: [],
-        }),
-      );
+        if (currentUser) {
+          dispatch(
+            updateLastTimeSeen({
+              conversationId: _id,
+              userId: currentUser._id,
+              time: new Date().toISOString(),
+            }),
+          );
+        }
+      }
     };
-  }, [_id]);
+  }, [_id, socket, currentUser, dispatch]);
 
   useEffect(() => {
-    if (_id && currentUser) {
+    if (_id && messages.length && currentUser) {
       dispatch(
         updateLastTimeSeen({
           conversationId: _id,
-          userId: currentUser?._id,
+          userId: currentUser._id,
           time: new Date().toISOString(),
         }),
       );
     }
-  }, [_id, messages]);
+  }, [_id, messages, currentUser, dispatch]);
 
   const pickImages = async () => {
     ImagePicker.launchImageLibraryAsync({
@@ -188,7 +185,7 @@ export const ConversationDetail = ({
     }
   };
 
-  const sendMessage = useCallback(async () => {
+  const sendMessage = async () => {
     if (!currentUser) return;
 
     if (!text.trim()) return;
@@ -249,86 +246,83 @@ export const ConversationDetail = ({
       setText('');
       socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
     }
-  }, [_id, conversation, currentUser, text]);
+  };
 
-  const sendAttachments = useCallback(
-    async (attachments: Attachment[], messageType: MessageType) => {
-      if (attachments.length > DEFAULT_LIMIT_ATTACHMENT)
-        return showPopup('Send a maximum of 5 attachments at a time');
+  const sendAttachments = async (
+    attachments: Attachment[],
+    messageType: MessageType,
+  ) => {
+    if (attachments.length > DEFAULT_LIMIT_ATTACHMENT)
+      return showPopup('Send a maximum of 5 attachments at a time');
 
-      const totalAttachmentSize = attachments.reduce(
-        (acc, attachment) => acc + attachment.metadata.size,
-        0,
-      );
+    const totalAttachmentSize = attachments.reduce(
+      (acc, attachment) => acc + attachment.metadata.size,
+      0,
+    );
 
-      if (totalAttachmentSize > DEFAULT_LIMIT_ATTACHMENT_SIZE)
-        return showPopup('Send a maximum of 500MB at a time');
+    if (totalAttachmentSize > DEFAULT_LIMIT_ATTACHMENT_SIZE)
+      return showPopup('Send a maximum of 500MB at a time');
 
-      if (!currentUser) return;
+    if (!currentUser) return;
 
-      let conversationId = _id;
-      let conversationData = conversation;
+    let conversationId = _id;
+    let conversationData = conversation;
 
-      if (isMockConversation && user && !_id) {
-        conversationData = await chatService.createMockConversation(user._id);
+    if (isMockConversation && user && !_id) {
+      conversationData = await chatService.createMockConversation(user._id);
 
-        if (!conversationData) return;
+      if (!conversationData) return;
 
-        conversationId = conversationData._id;
+      conversationId = conversationData._id;
 
-        dispatch(
-          setChatRoom({
-            _id: conversationId,
-            conversation: conversationData,
-            messages: [],
-          }),
-        );
-
-        dispatch(setNewConversation({ conversation: conversationData }));
-
-        socket?.emit(ClientEmitMessages.CREATE_CONVERSATION, conversationData);
-      }
-
-      if (!conversationId || !conversationData) {
-        navigation.goBack();
-        return;
-      }
-
-      const senderId = chatService.getSender(
-        conversationData,
-        currentUser?._id,
-      );
-
-      if (!senderId) {
-        navigation.goBack();
-        return;
-      }
-
-      const message = await chatService.createMessage({
-        content: '',
-        type: messageType,
-        attachments: attachments,
-        conversationId,
-        sender: senderId,
-        sharedKey: conversation?.sharedKey,
-      });
-
-      if (!message) return showPopup('Failed to send message.');
-
-      dispatch(setNewMessage(message));
-      dispatch(setLastMessage({ conversationId, message }));
       dispatch(
-        updateLastTimeSeen({
-          conversationId,
-          userId: currentUser?._id,
-          time: new Date(message.createdAt).toISOString(),
+        setChatRoom({
+          _id: conversationId,
+          conversation: conversationData,
+          messages: [],
         }),
       );
-      setText('');
-      socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
-    },
-    [_id, conversation, currentUser],
-  );
+
+      dispatch(setNewConversation({ conversation: conversationData }));
+
+      socket?.emit(ClientEmitMessages.CREATE_CONVERSATION, conversationData);
+    }
+
+    if (!conversationId || !conversationData) {
+      navigation.goBack();
+      return;
+    }
+
+    const senderId = chatService.getSender(conversationData, currentUser?._id);
+
+    if (!senderId) {
+      navigation.goBack();
+      return;
+    }
+
+    const message = await chatService.createMessage({
+      content: '',
+      type: messageType,
+      attachments: attachments,
+      conversationId,
+      sender: senderId,
+      sharedKey: conversation?.sharedKey,
+    });
+
+    if (!message) return showPopup('Failed to send message.');
+
+    dispatch(setNewMessage(message));
+    dispatch(setLastMessage({ conversationId, message }));
+    dispatch(
+      updateLastTimeSeen({
+        conversationId,
+        userId: currentUser?._id,
+        time: new Date(message.createdAt).toISOString(),
+      }),
+    );
+    setText('');
+    socket?.emit(ClientEmitMessages.SEND_MESSAGE, message);
+  };
 
   const renderItem = useCallback(
     ({ item }: any) => <MessageItem message={item} />,
