@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../api/login.api';
-import { Conversation } from '../api/getConversations.api';
+import { Conversation, Member } from '../api/getConversations.api';
 import { Message } from '../api/getMessages.api';
 
 interface ConversationsState {
@@ -107,6 +107,34 @@ const conversationsSlice = createSlice({
 
       state.conversations[conversationIndex].sharedKey = sharedKey;
     },
+    updateMember: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        member: Member;
+      }>,
+    ) => {
+      const { conversationId, member: updatedMember } = action.payload;
+
+      const conversationIndex = state.conversations.findIndex(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (conversationIndex === -1) return;
+
+      state.conversations[conversationIndex].members = state.conversations[
+        conversationIndex
+      ].members?.map((member) => {
+        if (member._id !== updatedMember._id) return member;
+
+        return {
+          ...member,
+          p: updatedMember.p,
+          g: updatedMember.g,
+          publicKey: updatedMember.publicKey,
+        };
+      });
+    },
   },
 });
 
@@ -116,5 +144,6 @@ export const {
   setLastMessage,
   updateLastTimeSeen,
   setSharedKey,
+  updateMember,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

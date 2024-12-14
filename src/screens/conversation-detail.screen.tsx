@@ -160,8 +160,11 @@ export const ConversationDetail = ({
         backgroundColor: colors.lightWhiteColor,
       },
       headerTitle: Header,
+      headerRight: () => (
+        <Icon name={conversation?.sharedKey ? 'lock' : 'lock-open'} size={28} />
+      ),
     });
-  }, []);
+  }, [conversation?.sharedKey]);
 
   const loadMessages = async () => {
     if (!_id || !hasMoreMessages) return;

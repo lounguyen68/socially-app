@@ -13,8 +13,9 @@ import { setNewMessage } from '../redux/chatRoomSlice';
 import {
   setLastMessage,
   setNewConversation,
+  updateMember,
 } from '../redux/conversationsSlice';
-import { Conversation } from '../api/getConversations.api';
+import { Conversation, Member } from '../api/getConversations.api';
 import { useServices } from './Services.context';
 import { RootState } from '../redux/store';
 
@@ -49,6 +50,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleNewConversation = useCallback(
     (conversation: Conversation) => {
+      console.log('handleNewConversation', user?.name);
+
       const isYourConversation = conversation.members.some(
         (member) => member.user._id === user?._id,
       );
@@ -57,14 +60,48 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
       chatService
         .getConversationById(conversation._id)
-        .then((data) => {
+        .then(async (data) => {
           if (!data) return;
 
-          dispatch(setNewConversation({ conversation: data }));
+          const conversation = await chatService.updatedConversation(
+            data,
+            user?._id,
+          );
+
+          const member = conversation.members.find(
+            (member) => member.user._id === user?._id,
+          );
+
+          if (member) {
+            socket?.emit(ServerEmitMessages.UPDATE_MEMBER, {
+              ...member,
+              conversation: conversation._id,
+            });
+          }
+
+          dispatch(setNewConversation({ conversation }));
         })
         .catch((error) => {});
     },
     [user],
+  );
+
+  const handleUpdateMember = useCallback(
+    ({
+      conversationId,
+      member,
+    }: {
+      conversationId: string;
+      member: Member;
+    }) => {
+      dispatch(
+        updateMember({
+          conversationId,
+          member,
+        }),
+      );
+    },
+    [],
   );
 
   useEffect(() => {
@@ -99,9 +136,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
     socket?.on(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
 
+    socket?.on(ServerEmitMessages.UPDATE_MEMBER, handleUpdateMember);
+
     return () => {
       socket?.off(ServerEmitMessages.NEW_MESSAGE, handleNewMessage);
       socket?.off(ServerEmitMessages.NEW_CONVERSATION, handleNewConversation);
+      socket?.on(ServerEmitMessages.UPDATE_MEMBER, handleUpdateMember);
     };
   }, [socket, _id, user]);
 

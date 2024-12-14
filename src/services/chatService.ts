@@ -6,6 +6,7 @@ import { Attachment } from '../api/getMessages.api';
 import { apiUpdateMember } from '../api/updateMember.api';
 import { ConversationType, MessageType, UploadType } from '../constants';
 import { encryptMessage, generateDHKeys, generateSharedKey } from '../helpers';
+import { messageV2 } from '../helpers/message.helper';
 import { storageService } from './storageService';
 import { uploadService } from './uploadService';
 
@@ -158,7 +159,7 @@ class ChatService {
         BigInt(otherMember.g),
       );
 
-      apiUpdateMember({
+      await apiUpdateMember({
         memberId: member._id,
         p: P.toString(),
         g: G.toString(),
@@ -188,6 +189,60 @@ class ChatService {
     );
 
     return;
+  }
+  async updatedConversation(conversation: Conversation, userId?: string) {
+    if (!userId) return conversation;
+
+    const privateKey = await storageService.getConversationPrivateKey(
+      conversation._id,
+    );
+
+    const otherMember = conversation.members?.find(
+      (member) => member.user._id !== userId,
+    );
+
+    if (!privateKey) {
+      const sharedKey = await chatService.generateConversationSharedKey(
+        conversation,
+        userId,
+      );
+
+      const lastMessage =
+        conversation?.lastMessage?.type === MessageType.TEXT && sharedKey
+          ? await messageV2(
+              conversation?.lastMessage,
+              sharedKey.toString(16).slice(0, 32),
+            )
+          : conversation?.lastMessage;
+
+      return {
+        ...conversation,
+        sharedKey: sharedKey ? sharedKey.toString(16).slice(0, 32) : undefined,
+        lastMessage: lastMessage,
+      };
+    }
+
+    if (!otherMember?.publicKey || !otherMember.p || !otherMember.g)
+      return conversation;
+
+    const sharedKey = generateSharedKey(
+      BigInt(otherMember.publicKey),
+      BigInt(privateKey),
+      BigInt(otherMember.p),
+    )
+      .toString(16)
+      .slice(0, 32);
+
+    const lastMessage =
+      conversation?.lastMessage?.type === MessageType.TEXT
+        ? await messageV2(conversation?.lastMessage, sharedKey)
+        : conversation?.lastMessage;
+
+    return {
+      ...conversation,
+      sharedKey: sharedKey,
+      lastMessage: lastMessage,
+    };
   }
 }
 

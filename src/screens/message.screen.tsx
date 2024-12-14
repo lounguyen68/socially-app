@@ -40,60 +40,10 @@ export function MessageScreen({ navigation }: any) {
       });
 
       data = await Promise.all(
-        data.map(async (conversation) => {
-          const privateKey = await storageService.getConversationPrivateKey(
-            conversation._id,
-          );
-
-          const otherMember = conversation.members?.find(
-            (member) => member.user._id !== user?._id,
-          );
-
-          if (!privateKey) {
-            const sharedKey = await chatService.generateConversationSharedKey(
-              conversation,
-              user?._id,
-            );
-
-            const lastMessage =
-              conversation.lastMessage.type === MessageType.TEXT && sharedKey
-                ? await messageV2(
-                    conversation.lastMessage,
-                    sharedKey.toString(16).slice(0, 32),
-                  )
-                : conversation.lastMessage;
-
-            return {
-              ...conversation,
-              sharedKey: sharedKey
-                ? sharedKey.toString(16).slice(0, 32)
-                : undefined,
-              lastMessage: lastMessage,
-            };
-          }
-
-          if (!otherMember?.publicKey || !otherMember.p || !otherMember.g)
-            return conversation;
-
-          const sharedKey = generateSharedKey(
-            BigInt(otherMember.publicKey),
-            BigInt(privateKey),
-            BigInt(otherMember.p),
-          )
-            .toString(16)
-            .slice(0, 32);
-
-          const lastMessage =
-            conversation.lastMessage.type === MessageType.TEXT
-              ? await messageV2(conversation.lastMessage, sharedKey)
-              : conversation.lastMessage;
-
-          return {
-            ...conversation,
-            sharedKey: sharedKey,
-            lastMessage: lastMessage,
-          };
-        }),
+        data.map(
+          async (conversation) =>
+            await chatService.updatedConversation(conversation, user?._id),
+        ),
       );
 
       dispatch(
@@ -109,6 +59,7 @@ export function MessageScreen({ navigation }: any) {
         setHasMoreConversations(true);
       }
     } catch (error) {
+      console.error(error);
       showPopup('Failed to load conversations.');
     }
   };

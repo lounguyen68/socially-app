@@ -5,7 +5,7 @@ import { Message } from '../api/getMessages.api';
 interface ChatRoomState {
   _id?: string;
   conversation?: Conversation;
-  messages: any[];
+  messages: Message[];
 }
 
 const initialState: ChatRoomState = {

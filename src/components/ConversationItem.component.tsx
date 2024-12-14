@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   avatar: {
+    alignSelf: 'center',
     width: 48,
     height: 48,
     borderRadius: 24,
