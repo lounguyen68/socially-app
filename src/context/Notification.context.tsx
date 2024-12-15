@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import * as Notifications from 'expo-notifications';
 import { notificationService } from '../services/notificationService';
+import { apiUpdateDeviceToken } from '../api/updateDeviceToken.api';
 
 interface NotificationContextType {
   expoPushToken: string | null;
@@ -46,7 +47,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   useEffect(() => {
     notificationService.registerForPushNotificationsAsync().then(
-      (token) => setExpoPushToken(token ?? ''),
+      (token) => {
+        if (token) {
+          setExpoPushToken(token);
+          apiUpdateDeviceToken({ deviceToken: token });
+        }
+      },
       (error) => setError(error),
     );
 

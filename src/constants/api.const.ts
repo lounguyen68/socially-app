@@ -5,6 +5,8 @@ export enum Routes {
   REFRESH_TOKEN = '/auth/token',
   GET_USERS = '/users',
   UPDATE_USER_AVATAR = '/users/update-avatar',
+  UPDATE_DEVICE_TOKEN = '/users/device-token',
+
   GET_CONVERSATIONS = '/conversations',
   CREATE_CONVERSATION = '/conversations',
   GET_CONVERSATION_BY_ID = '/conversations',

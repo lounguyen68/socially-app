@@ -4,7 +4,6 @@ export interface UploadPayload {
 }
 
 export const apiUpload = ({ url, body }: UploadPayload) => {
-  console.log(JSON.stringify(body));
   const urlObj = new URL(url);
   return fetch(urlObj, {
     method: 'PUT',

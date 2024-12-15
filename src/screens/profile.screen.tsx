@@ -63,7 +63,6 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         //   routes: [{ name: 'login' }],
         // });
         dispatch(logout());
-        ``;
       })
       .catch((err) => {
         console.error(err);
