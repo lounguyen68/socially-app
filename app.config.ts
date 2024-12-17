@@ -3,7 +3,7 @@ import { ExpoConfig, ConfigContext } from '@expo/config';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'Socially',
   slug: 'socially',
-  version: '1.0.0',
+  version: '1.0.1',
   orientation: 'portrait',
   icon: './assets/images/socially-icon.png',
   scheme: 'socially-app',
@@ -23,8 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     permissions: ['android.permission.READ_MEDIA_IMAGES'],
     package: 'com.lounguyen68.socially',
-    googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+    googleServicesFile: './google-services.json',
   },
   plugins: [
     [
