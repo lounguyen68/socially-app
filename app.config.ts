@@ -41,6 +41,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      'expo-splash-screen',
+      {
+        backgroundColor: '#FFF',
+        image: './assets/images/socially-icon.png',
+        imageWidth: 200,
+      },
+    ],
+    [
       'expo-image-picker',
       {
         photosPermission:
