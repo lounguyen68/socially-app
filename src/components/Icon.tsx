@@ -41,7 +41,7 @@ const Icon = ({ name, colors, size, style, onPress }: IconProps) => {
       onPress={onPress}
     >
       <Text>
-        <SvgXml width={size ?? 16} height={size ?? 16} xml={iconUri} />;
+        <SvgXml width={size ?? 16} height={size ?? 16} xml={iconUri} />
       </Text>
     </TouchableOpacity>
   );

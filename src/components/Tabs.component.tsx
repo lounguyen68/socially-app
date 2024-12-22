@@ -1,16 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { mainScreens } from '../constants/screen.const';
+import { mainStacks } from '../navigation/stack.navigation';
 import TabBarIcon from './TabBarIcon.component';
 import { StyleSheet } from 'react-native';
 import { Button } from './Button.component';
 import { colors } from '../constants/colors.const';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+
+export const requestMediaPermissions = async () => {
+  let imagePickerPermission =
+    await ImagePicker.getMediaLibraryPermissionsAsync();
+  if (!imagePickerPermission.granted) {
+    imagePickerPermission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+  }
+
+  return imagePickerPermission.granted;
+};
+
+export const requestFilesPermissions = async () => {
+  // if (Platform.OS === 'android') {
+  //   const filePermission = await FileSystem.getPermissionsAsync();
+  //   if (!filePermission.granted) {
+  //     await FileSystem.requestPermissionsAsync();
+  //   }
+  // }
+};
 
 const Tab = createBottomTabNavigator();
 
 const TabsComponent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<Record<string, any>>>();
+
+  useEffect(() => {
+    requestMediaPermissions();
+    // requestFilesPermissions();
+  }, []);
 
   return (
     <Tab.Navigator
@@ -19,17 +46,17 @@ const TabsComponent: React.FC = () => {
         borderTopStartRadius: 20,
         borderTopEndRadius: 20,
         height: 60,
-        alignItems: 'center',
       }}
       initialRouteName="home"
     >
-      {mainScreens.map((screen, index) => (
+      {mainStacks.map((screen, index) => (
         <Tab.Screen
           key={index}
           name={screen.name}
           component={screen.component}
           options={{
-            headerShown: false,
+            headerShown: screen.name === 'post',
+            headerTitle: screen.title,
             tabBarIcon: ({ color }) => {
               if (screen.name === 'post')
                 return (
@@ -53,6 +80,7 @@ const TabsComponent: React.FC = () => {
                 />
               );
             },
+            tabBarHideOnKeyboard: true,
             tabBarLabelStyle: { display: 'none' },
             tabBarActiveTintColor: colors.primaryColor,
           }}
@@ -73,11 +101,11 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     transform: [{ rotate: '45deg' }],
 
-    shadowColor: '#000000', // Color of the shadow
-    shadowOffset: { width: 0, height: 4 }, // Horizontal and vertical offsets
-    shadowOpacity: 0.25, // Opacity of the shadow
-    shadowRadius: 12, // Blur radius
-    elevation: 12, // Elevation for Android (matching the blur radius)
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 12,
   },
 });
 

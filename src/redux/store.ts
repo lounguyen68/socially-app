@@ -1,9 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from './counterSlice';
+import userReducer from './userSlice';
+import conversationsReducer from './conversationsSlice';
+import chatRoomReducer from './chatRoomSlice';
 
 const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    user: userReducer,
+    conversations: conversationsReducer,
+    chatRoom: chatRoomReducer,
   },
 });
 

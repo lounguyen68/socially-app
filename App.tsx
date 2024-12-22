@@ -1,17 +1,53 @@
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import TabsComponent from './src/components/Tabs.component';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './src/redux/store';
-import { PopupProvider } from './src/components/Popup.component';
+import {
+  PopupProvider,
+  ServiceProvider,
+  SocketProvider,
+  useServices,
+} from './src/context';
+import { RootState } from './src/redux/store';
+import { AuthStackScreen } from './src/navigation';
+import { NotificationProvider } from './src/context/Notification.context';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 SplashScreen.preventAutoHideAsync();
 
-const Stack = createStackNavigator();
+const MainNavigator = () => {
+  const { userService } = useServices();
+  const { user } = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!user?._id) {
+      userService.checkRememberLogin(dispatch);
+    }
+  }, [user?._id]);
+
+  if (!user) {
+    return <AuthStackScreen />;
+  }
+
+  return (
+    <SocketProvider>
+      <TabsComponent />
+    </SocketProvider>
+  );
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -20,7 +56,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      // SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
@@ -31,16 +67,14 @@ export default function App() {
   return (
     <NavigationContainer>
       <Provider store={store}>
-        <PopupProvider>
-          <Stack.Navigator>
-            <Stack.Screen
-              name="Tabs"
-              component={TabsComponent}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
-          <StatusBar style="auto" />
-        </PopupProvider>
+        <NotificationProvider>
+          <ServiceProvider>
+            <PopupProvider>
+              <MainNavigator />
+              <StatusBar style="auto" />
+            </PopupProvider>
+          </ServiceProvider>
+        </NotificationProvider>
       </Provider>
     </NavigationContainer>
   );

@@ -1,50 +1,127 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Avatar } from '@/src/components/Avatar.component';
-import { Button } from '@/src/components/Button.component';
-import ScreenComponent from '@/src/components/Screen.component';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { colors } from '../constants/colors.const';
+import Icon from '../components/Icon';
+import { apiLogout } from '../api/logout.api';
+import { usePopup, useServices } from '../context';
+import { logout, updateUserData } from '../redux/userSlice';
+import { ProfileScreenProps } from '@/type';
+import { setConversations } from '../redux/conversationsSlice';
+import { useCallback, useState } from 'react';
 
-export const ProfileScreen = () => {
-  const user = {
-    name: 'Nguyen Phuong Longg',
-    avatar:
-      'https://scontent.fhan2-3.fna.fbcdn.net/v/t39.30808-6/449091703_4572873969603448_1541748669804218095_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=xMKhA1XtYzcQ7kNvgE1ufW0&_nc_ht=scontent.fhan2-3.fna&oh=00_AYCXLcIXvNRQO7y2rrmwV1eRpm5cvP1jEMLjAIk52UaVig&oe=66F5E252',
+export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
+  const { user } = useSelector((state: RootState) => state.user);
+  const { http, storageService, userService } = useServices();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const { showPopup } = usePopup();
+
+  const handleChangeAvatar = async () => {
+    if (loading) return;
+
+    ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    }).then((result) => {
+      if (result.canceled) return;
+      setLoading(true);
+      const avatar = result.assets[0];
+      userService
+        .updateUserAvatar(avatar)
+        .then((userData) => {
+          if (!userData) return;
+
+          storageService.setUserInfo(userData);
+          dispatch(updateUserData(userData));
+        })
+        .catch((error) => {
+          showPopup(error);
+        });
+    });
   };
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+  const handleLogout = () => {
+    apiLogout()
+      .then(async () => {
+        dispatch(setConversations({ conversations: [], isRefreshing: true }));
+        http.setToken('');
+        await storageService.clearRefreshToken();
+        await storageService.clearUserInfo();
+        // navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: 'login' }],
+        // });
+        dispatch(logout());
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   return (
-    <ScreenComponent
-      title="Profile"
-      isLoading={isLoading}
-      headerLeft={<></>}
-      // headerRight={<Button title="retry" onPress={handleRefresh} />}
-    >
+    <View style={styles.container}>
       <View style={styles.userInfo}>
         <View style={styles.background} />
-        <Avatar src={user.avatar} />
-        <Text>{user.name}</Text>
+        <TouchableOpacity style={styles.avatar} onPress={handleChangeAvatar}>
+          <Avatar src={user?.avatarPath} setLoading={() => setLoading(false)} />
+          {loading ? (
+            <ActivityIndicator size={40} style={styles.cameraIcon} />
+          ) : (
+            <Icon name="camera" size={40} style={styles.cameraIcon} />
+          )}
+        </TouchableOpacity>
+        <Text style={styles.userName}>{user?.name}</Text>
       </View>
-    </ScreenComponent>
+
+      <View style={styles.userFeatures}>
+        <TouchableOpacity style={styles.userFeatureItem} onPress={handleLogout}>
+          <Icon name="logout" size={28} />
+          <Text style={styles.userFeatureText}>{'Log out'}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    flex: 1,
+    backgroundColor: colors.whiteColor,
+  },
   userInfo: {
-    paddingVertical: 40,
+    paddingTop: 40,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderColor: '#E1F6F4',
+  },
+  userName: {
+    fontWeight: '700',
+    fontSize: 22,
+    paddingVertical: 10,
+  },
+  userFeatures: {
+    padding: 20,
+  },
+  userFeatureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  userFeatureText: {
+    fontSize: 16,
   },
   background: {
     backgroundColor: '#E1F6F4',
@@ -53,5 +130,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -490,
     borderRadius: 300,
+  },
+  avatar: {
+    opacity: 0.8,
+  },
+  cameraIcon: {
+    position: 'absolute',
+    top: 75,
+    left: 75,
+    transform: [{ translateX: -20 }, { translateY: -20 }],
   },
 });
